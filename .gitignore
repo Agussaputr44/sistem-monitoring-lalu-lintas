@@ -1,0 +1,5 @@
+# .gitignore or exclude list
+__pycache__/
+*.pyc
+yolo/yolov8n.pt
+.env

@@ -15,11 +15,11 @@ import json
 model_yolo = YOLO("yolo/yolov8n.pt")
 vehicle_classes = ["car", "motorcycle", "bus", "truck", "bicycle", "person"]
 frame_queue = Queue(maxsize=5)
-api_queue = Queue()  # Queue untuk antrian API requests
+api_queue = Queue()  
 
 # Konfigurasi API
 API_CONFIG = {
-    "url": "http://127.0.0.1:8000/api/logs",
+    "url": "http://127.0.0.1:8000/vehicles/",
     "timeout": 10,
     "max_retries": 3,
     "retry_delay": 2
@@ -46,7 +46,6 @@ def api_worker(app):
             api_queue.task_done()
             
         except:
-            # Queue kosong atau timeout, lanjutkan
             continue
 
 def send_to_api_with_retry(data, app):
@@ -54,10 +53,8 @@ def send_to_api_with_retry(data, app):
     for attempt in range(API_CONFIG["max_retries"]):
         try:
             payload = {
-                "type": data["type"],
-                "speed": round(data["speed"], 1),
-                "timestamp": data["timestamp"],
-                "track_id": data.get("track_id", None)
+                "vehicle_type": data["type"],
+                "speed_kmph": round(data["speed"], 1)
             }
 
             headers = {
