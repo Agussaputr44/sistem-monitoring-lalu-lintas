@@ -106,7 +106,3 @@ Proyek ini dilisensikan di bawah [MIT License](LICENSE).
 ---
 
 💡 *Dikembangkan bersama tim untuk sistem analisis lalu lintas berbasis AI.*
-
-```
-
-
