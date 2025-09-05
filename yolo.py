@@ -8,6 +8,8 @@ import pandas as pd
 from ultralytics import YOLO
 import time
 from collections import defaultdict, deque
+import requests
+import json
 
 model_yolo = YOLO("yolov8n.pt")
 
@@ -19,6 +21,81 @@ vehicle_classes = {
     'truck': {'name': 'Truk', 'min_conf': 0.5},
     'bus': {'name': 'Bus', 'min_conf': 0.5}
 }
+
+class APIManager:
+    def __init__(self, base_url="http://localhost:8000/api"):
+        self.base_url = base_url
+        self.headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    
+    def send_vehicle_data(self, vehicle_type, speed, timestamp, additional_data=None):
+        """Send vehicle detection data to Laravel API"""
+        try:
+            data = {
+                'vehicle_type': vehicle_type,
+                'speed': speed,
+                'detected_at': timestamp,
+                'location': 'Bengkalis Traffic Cam',  # You can make this configurable
+                'confidence': additional_data.get('confidence', 0) if additional_data else 0,
+                'track_id': additional_data.get('track_id', 0) if additional_data else 0
+            }
+            
+            response = requests.post(f"{self.base_url}/vehicle-detections", 
+                                   json=data, 
+                                   headers=self.headers,
+                                   timeout=5)
+            
+            if response.status_code in [200, 201]:
+                return True, "Data berhasil dikirim ke server"
+            else:
+                return False, f"Server error: {response.status_code}"
+                
+        except requests.exceptions.RequestException as e:
+            return False, f"Connection error: {str(e)}"
+    
+    def send_batch_data(self, vehicle_data_list):
+        """Send multiple vehicle detections in one request"""
+        try:
+            batch_data = []
+            for data in vehicle_data_list:
+                batch_data.append({
+                    'vehicle_type': data[0],
+                    'speed': data[1],
+                    'detected_at': data[2],
+                    'location': 'Bengkalis Traffic Cam',
+                    'confidence': data[3] if len(data) > 3 else 0,
+                    'track_id': data[4] if len(data) > 4 else 0
+                })
+            
+            response = requests.post(f"{self.base_url}/vehicle-detections/batch", 
+                                   json={'detections': batch_data}, 
+                                   headers=self.headers,
+                                   timeout=10)
+            
+            if response.status_code in [200, 201]:
+                return True, f"Batch data ({len(batch_data)} records) berhasil dikirim"
+            else:
+                return False, f"Server error: {response.status_code}"
+                
+        except requests.exceptions.RequestException as e:
+            return False, f"Connection error: {str(e)}"
+    
+    def get_statistics(self):
+        """Get vehicle detection statistics from API"""
+        try:
+            response = requests.get(f"{self.base_url}/vehicle-statistics", 
+                                  headers=self.headers,
+                                  timeout=5)
+            
+            if response.status_code == 200:
+                return True, response.json()
+            else:
+                return False, "Failed to get statistics"
+                
+        except requests.exceptions.RequestException as e:
+            return False, f"Connection error: {str(e)}"
 
 def calculate_speed_smoothed(positions, timestamps, scale_factor):
     """Calculate smoothed speed using multiple position points."""
@@ -49,7 +126,7 @@ def is_crossing_line(y1, y2, line_y, tolerance=10):
 def run_detection(app):
     """Run vehicle detection and tracking using YOLO."""
     try:
-        cap = cv2.VideoCapture("lalulintasbengkalisnight.mp4")
+        cap = cv2.VideoCapture(r"D:\Rizqo\phyton\monitoringlalulintas\sistem-monitoring-lalu-lintas\lalulintasbengkalis.mp4")
         if not cap.isOpened():
             app.append_log("Gagal membuka kamera: Stream tidak tersedia.")
             return
@@ -75,8 +152,7 @@ def run_detection(app):
     data_records = []
     
     # Improved scale factor (adjust based on your video perspective)
-    # Estimate: if road width is ~3.5m and appears as ~350 pixels, then 100 pixels = 1 meter
-    scale_factor = 100  # pixels per meter (adjust this based on your video)
+    scale_factor = float(app.scale_var.get()) if app.scale_var.get().replace('.','').isdigit() else 100
     
     # Counting line (horizontal line across the frame)
     target_width, target_height = 640, 480
@@ -154,11 +230,25 @@ def run_detection(app):
                 if not track_info['counted']:
                     track_info['counted'] = True
                     vehicle_counter[most_voted_class] += 1
-                    timestamp = datetime.now().strftime("%H:%M:%S")
-                    data_records.append([display_name, speed, timestamp])
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    # Store data with additional info for API
+                    record = [display_name, speed, timestamp, conf, track_id]
+                    data_records.append(record)
+                    
+                    # Send to API immediately if enabled
+                    if app.api_enabled.get():
+                        success, message = app.api_manager.send_vehicle_data(
+                            display_name, speed, timestamp, 
+                            {'confidence': conf, 'track_id': track_id}
+                        )
+                        if success:
+                            app.append_log(f"✅ API: {message}")
+                        else:
+                            app.append_log(f"❌ API Error: {message}")
                     
                     app.append_log(f"{display_name} melewati garis dengan kecepatan {speed:.1f} km/h "
-                                 f"(confidence: {conf:.2f})")
+                                 f"(confidence: {conf:.2f}, ID: {track_id})")
                     app.update_vehicle_count(vehicle_counter)
 
                 # Draw bounding box dan info
@@ -183,6 +273,9 @@ def run_detection(app):
         for track_id in tracks_to_remove:
             del track_history[track_id]
 
+        # Draw counting line
+        cv2.line(frame, (0, counting_line_y), (target_width, counting_line_y), (255, 0, 0), 2)
+
         # Display info
         info_text = f"Frame: {frame_count} | Tracks: {len(track_history)} | "
         info_text += f"Total: {sum(vehicle_counter.values())}"
@@ -205,14 +298,17 @@ class VehicleDetectionApp:
     def __init__(self, root):
         """Initialize the Tkinter GUI application."""
         self.root = root
-        self.root.title("Deteksi & Klasifikasi Kendaraan (YOLO) - Masih Tahap Beta")
-        self.root.geometry("800x700")
+        self.root.title("Deteksi & Klasifikasi Kendaraan (YOLO) - API Integration")
+        self.root.geometry("900x800")
         self.root.configure(bg="#f0f0f0")
 
         self.running = False
         self.thread = None
         self.vehicle_data = []
         self.vehicle_counter = {v: 0 for v in vehicle_classes.keys()}
+        
+        # Initialize API Manager
+        self.api_manager = APIManager()
 
         # Create main frame
         self.main_frame = ttk.Frame(self.root, padding="10")
@@ -220,9 +316,30 @@ class VehicleDetectionApp:
 
         # Title label
         self.title_label = ttk.Label(self.main_frame, 
-                                   text="Vehicle Detection System (Versi Beta)",
+                                   text="Vehicle Detection System with API Integration",
                                    font=("Helvetica", 16, "bold"))
         self.title_label.pack(pady=10)
+
+        # API Configuration Frame
+        self.api_frame = ttk.LabelFrame(self.main_frame, text="Konfigurasi API", padding="10")
+        self.api_frame.pack(fill=tk.X, pady=5)
+
+        # API URL setting
+        ttk.Label(self.api_frame, text="API URL:").grid(row=0, column=0, sticky=tk.W)
+        self.api_url_var = tk.StringVar(value="http://localhost:8000/api")
+        self.api_url_entry = ttk.Entry(self.api_frame, textvariable=self.api_url_var, width=40)
+        self.api_url_entry.grid(row=0, column=1, padx=5, sticky=tk.W)
+
+        # API Enable checkbox
+        self.api_enabled = tk.BooleanVar(value=True)
+        self.api_check = ttk.Checkbutton(self.api_frame, text="Kirim data ke API secara real-time", 
+                                       variable=self.api_enabled)
+        self.api_check.grid(row=1, column=0, columnspan=2, sticky=tk.W, pady=5)
+
+        # API Test button
+        self.btn_test_api = ttk.Button(self.api_frame, text="🔗 Test Koneksi API", 
+                                     command=self.test_api_connection)
+        self.btn_test_api.grid(row=2, column=0, pady=5, sticky=tk.W)
 
         # Status frame
         self.status_frame = ttk.LabelFrame(self.main_frame, text="Status Deteksi", padding="10")
@@ -246,9 +363,13 @@ class VehicleDetectionApp:
                                  command=self.stop_detection, state='disabled')
         self.btn_stop.grid(row=0, column=1, padx=5)
 
-        self.btn_save = ttk.Button(self.button_frame, text="💾 Simpan Data",
+        self.btn_save = ttk.Button(self.button_frame, text="💾 Simpan Data CSV",
                                  command=self.save_data)
         self.btn_save.grid(row=0, column=2, padx=5)
+
+        self.btn_send_batch = ttk.Button(self.button_frame, text="📤 Kirim Batch ke API",
+                                       command=self.send_batch_to_api)
+        self.btn_send_batch.grid(row=0, column=3, padx=5)
 
         # Settings frame
         self.settings_frame = ttk.LabelFrame(self.main_frame, text="Pengaturan", padding="5")
@@ -263,9 +384,37 @@ class VehicleDetectionApp:
         self.log_frame = ttk.LabelFrame(self.main_frame, text="Log Deteksi", padding="5")
         self.log_frame.pack(fill=tk.BOTH, expand=True, pady=5)
         
-        self.txt_log = scrolledtext.ScrolledText(self.log_frame, width=90, height=25,
+        self.txt_log = scrolledtext.ScrolledText(self.log_frame, width=100, height=20,
                                                font=("Courier", 9))
         self.txt_log.pack(fill=tk.BOTH, expand=True)
+
+    def test_api_connection(self):
+        """Test API connection"""
+        self.api_manager.base_url = self.api_url_var.get()
+        success, result = self.api_manager.get_statistics()
+        
+        if success:
+            self.append_log("✅ Koneksi API berhasil!")
+            messagebox.showinfo("API Test", "Koneksi API berhasil!")
+        else:
+            self.append_log(f"❌ Koneksi API gagal: {result}")
+            messagebox.showerror("API Test", f"Koneksi API gagal:\n{result}")
+
+    def send_batch_to_api(self):
+        """Send all collected data to API in batch"""
+        if not self.vehicle_data:
+            messagebox.showwarning("Peringatan", "Belum ada data untuk dikirim.")
+            return
+        
+        self.api_manager.base_url = self.api_url_var.get()
+        success, message = self.api_manager.send_batch_data(self.vehicle_data)
+        
+        if success:
+            self.append_log(f"✅ Batch API: {message}")
+            messagebox.showinfo("Batch Upload", message)
+        else:
+            self.append_log(f"❌ Batch API Error: {message}")
+            messagebox.showerror("Batch Upload Error", message)
 
     def append_log(self, message):
         """Append message to the log display in a thread-safe way."""
@@ -295,6 +444,9 @@ class VehicleDetectionApp:
         if self.running:
             messagebox.showinfo("Info", "Deteksi sedang berjalan.")
             return
+        
+        # Update API manager base URL
+        self.api_manager.base_url = self.api_url_var.get()
             
         self.running = True
         self.btn_start.config(state='disabled')
@@ -304,6 +456,11 @@ class VehicleDetectionApp:
         self.update_vehicle_count(self.vehicle_counter)
         
         self.append_log("Memulai sistem deteksi kendaraan...")
+        if self.api_enabled.get():
+            self.append_log(f"API Integration aktif: {self.api_url_var.get()}")
+        else:
+            self.append_log("API Integration nonaktif - data hanya disimpan lokal")
+            
         self.thread = threading.Thread(target=run_detection, args=(self,))
         self.thread.daemon = True
         self.thread.start()
@@ -325,14 +482,15 @@ class VehicleDetectionApp:
             
         try:
             df = pd.DataFrame(self.vehicle_data, 
-                            columns=["Jenis Kendaraan", "Kecepatan (km/h)", "Waktu"])
+                            columns=["Jenis Kendaraan", "Kecepatan (km/h)", "Waktu", "Confidence", "Track ID"])
             filename = f"data_kendaraan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
             df.to_csv(filename, index=False)
             
             # Buat summary
             summary = df.groupby('Jenis Kendaraan').agg({
-                'Kecepatan (km/h)': ['count', 'mean', 'max', 'min']
-            }).round(1)
+                'Kecepatan (km/h)': ['count', 'mean', 'max', 'min'],
+                'Confidence': 'mean'
+            }).round(2)
             
             messagebox.showinfo("Sukses", 
                               f"Data berhasil disimpan ke {filename}\n"
