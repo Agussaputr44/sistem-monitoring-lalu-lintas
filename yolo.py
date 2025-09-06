@@ -126,7 +126,7 @@ def is_crossing_line(y1, y2, line_y, tolerance=10):
 def run_detection(app):
     """Run vehicle detection and tracking using YOLO."""
     try:
-        cap = cv2.VideoCapture(r"D:\Rizqo\phyton\monitoringlalulintas\sistem-monitoring-lalu-lintas\lalulintasbengkalis.mp4")
+        cap = cv2.VideoCapture("rtsp://admin:Bengkalis12@192.168.1.64:554")
         if not cap.isOpened():
             app.append_log("Gagal membuka kamera: Stream tidak tersedia.")
             return
