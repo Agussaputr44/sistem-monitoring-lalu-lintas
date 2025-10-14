@@ -1,43 +1,34 @@
-from sqlalchemy.orm import Session
 from app.models.vehicle_model import VehicleDetection
+from datetime import datetime
 from sqlalchemy import func
-from datetime import date, datetime
-from fastapi import HTTPException
 
-def save_detection(db: Session, vehicle_type: str, speed_kmph: float):
-    detection = VehicleDetection(vehicle_type=vehicle_type, speed_kmph=speed_kmph)
+def save_detection(db, vehicle_type, speed_kmph, confidence=0.0, track_id=0, location="Camera Bengkalis"):
+    detection = VehicleDetection(
+        vehicle_type=vehicle_type,
+        speed_kmph=speed_kmph,
+        confidence=confidence,
+        track_id=track_id,
+        location=location,
+        detected_at=datetime.utcnow()
+    )
     db.add(detection)
     db.commit()
     db.refresh(detection)
     return detection
 
-def get_daily_statistics(db: Session):
-    raw_results = db.query(
+def get_daily_statistics(db):
+    return db.query(
         VehicleDetection.vehicle_type,
         func.count(VehicleDetection.id).label("count")
-    ).filter(
-        func.date(VehicleDetection.detected_at) == date.today()
     ).group_by(VehicleDetection.vehicle_type).all()
 
-    return [{"vehicle_type": r[0], "count": r[1]} for r in raw_results]
+def get_vehicle_by_type(db, vehicle_type):
+    return db.query(VehicleDetection).filter(VehicleDetection.vehicle_type == vehicle_type).all()
 
-def get_vehicle_by_type(db: Session, vehicle_type: str):
-    return db.query(VehicleDetection
-    ).filter(VehicleDetection.vehicle_type == vehicle_type).all()
-    
-def get_history(db: Session):
-    return db.query(VehicleDetection
-    ).order_by(VehicleDetection.detected_at.desc()
-    ).all()
-    
-def get_history_by_date(db: Session, date_str: str):
-    try:
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Format tanggal harus YYYY-MM-DD")
+def get_history(db):
+    return db.query(VehicleDetection).order_by(VehicleDetection.detected_at.desc()).all()
 
-    results = db.query(VehicleDetection).filter(
-        func.date(VehicleDetection.detected_at) == date_obj
+def get_history_by_date(db, date):
+    return db.query(VehicleDetection).filter(
+        func.date(VehicleDetection.detected_at) == date
     ).order_by(VehicleDetection.detected_at.desc()).all()
-
-    return results

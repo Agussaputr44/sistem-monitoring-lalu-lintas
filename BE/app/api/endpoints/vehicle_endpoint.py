@@ -4,9 +4,8 @@ from app.database.session import SessionLocal
 from app.services import vehicle_service
 from pydantic import BaseModel
 
-router = APIRouter()
+router = APIRouter(prefix="/api/vehicle-detections", tags=["Vehicle Detections"])
 
-# Dependency
 def get_db():
     db = SessionLocal()
     try:
@@ -14,15 +13,18 @@ def get_db():
     finally:
         db.close()
 
-# Pydantic model
 class VehicleIn(BaseModel):
     vehicle_type: str
     speed_kmph: float
+    confidence: float = 0
+    track_id: int = 0
+    location: str = "Camera Bengkalis"
 
 @router.post("/")
 def create_vehicle(data: VehicleIn, db: Session = Depends(get_db)):
-    return vehicle_service.save_detection(db, data.vehicle_type, data.speed_kmph)
-
+    return vehicle_service.save_detection(
+        db, data.vehicle_type, data.speed_kmph, data.confidence, data.track_id, data.location
+    )
 
 @router.get("/statistic")
 def get_stats(db: Session = Depends(get_db)):

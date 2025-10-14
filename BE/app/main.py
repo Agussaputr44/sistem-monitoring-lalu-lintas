@@ -1,14 +1,13 @@
 from fastapi import FastAPI
-from app.api.endpoints import vehicle_endpoint 
-from app.database.session import engine
-from app.models import vehicle_model
+from app.database.session import Base, engine
+from app.api.endpoints.vehicle_endpoint import router as vehicle_router
 
-vehicle_model.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(title="Traffic Monitoring API")
 
-app.include_router(vehicle_endpoint.router, prefix="/vehicles", tags=["Vehicles"])
+app.include_router(vehicle_router)
 
 @app.get("/")
 def root():
-    return {"message": "Monitoring kendaraan API aktif"}
+    return {"message": "Traffic Monitoring API is running!"}

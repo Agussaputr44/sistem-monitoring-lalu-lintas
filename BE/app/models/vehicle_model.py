@@ -6,6 +6,9 @@ class VehicleDetection(Base):
     __tablename__ = "vehicle_detections"
 
     id = Column(Integer, primary_key=True, index=True)
-    vehicle_type = Column(String(20), nullable=False)
+    vehicle_type = Column(String(50))
     speed_kmph = Column(Float)
+    confidence = Column(Float)
+    track_id = Column(Integer)
+    location = Column(String(100))
     detected_at = Column(DateTime, default=datetime.utcnow)

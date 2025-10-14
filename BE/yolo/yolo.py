@@ -9,327 +9,427 @@ import pandas as pd
 from ultralytics import YOLO
 import time
 from queue import Queue
-import json
+from collections import defaultdict
 
-# Load YOLOv8 model
-model_yolo = YOLO("yolo/yolov8n.pt")
-vehicle_classes = ["car", "motorcycle", "bus", "truck", "bicycle", "person"]
-frame_queue = Queue(maxsize=5)
-api_queue = Queue()  
+# Model YOLO
+model_yolo = YOLO("yolov8s.pt")
 
-# Konfigurasi API
-API_CONFIG = {
-    "url": "http://127.0.0.1:8000/vehicles/",
-    "timeout": 10,
-    "max_retries": 3,
-    "retry_delay": 2
+# Konfigurasi kendaraan - TAMBAH PICKUP
+vehicle_classes = {
+    'car': {'name': 'Mobil', 'min_conf': 0.25, 'min_area': 600}, 
+    'motorcycle': {'name': 'Motor', 'min_conf': 0.25, 'min_area': 250},
+    'bicycle': {'name': 'Sepeda', 'min_conf': 0.30, 'min_area': 150},
+    'bus': {'name': 'Bus', 'min_conf': 0.25, 'min_area': 1500},
+    'truck': {'name': 'Truk', 'min_conf': 0.25, 'min_area': 1000},
+    'pickup': {'name': 'Pickup', 'min_conf': 0.25, 'min_area': 700}, 
 }
 
-# -----------------------------
-# API Worker Thread
-# -----------------------------
+api_queue = Queue()
+
+# API Manager
+class APIManager:
+    def __init__(self, base_url="http://localhost:8000/api"):
+        self.base_url = base_url
+        self.headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        self.session = requests.Session()
+        self.session.headers.update(self.headers)
+
+    def send_vehicle_data(self, vehicle_type, speed, timestamp, track_id=0, confidence=0):
+        try:
+            data = {
+                'vehicle_type': vehicle_type,
+                'speed': round(speed, 1),
+                'detected_at': timestamp,
+                'location': 'Bengkalis Traffic Cam',
+                'confidence': round(confidence, 2),
+                'track_id': track_id
+            }
+            response = self.session.post(
+                f"{self.base_url}/vehicle-detections",
+                json=data, 
+                timeout=2
+            )
+            return response.status_code in [200, 201], response.text
+        except Exception as e:
+            return False, str(e)
+
 def api_worker(app):
-    """Thread terpisah untuk menangani pengiriman data ke API"""
+    """Worker thread untuk kirim data ke API - batch processing"""
+    batch = []
+    batch_size = 10
+    last_send_time = time.time()
+    
     while app.running or not api_queue.empty():
         try:
-            # Ambil data dari queue dengan timeout
-            data = api_queue.get(timeout=1)
+            try:
+                data = api_queue.get(timeout=0.5)
+                batch.append(data)
+                api_queue.task_done()
+            except:
+                pass
             
-            # Coba kirim ke API dengan retry mechanism
-            success = send_to_api_with_retry(data, app)
+            current_time = time.time()
+            should_send = (len(batch) >= batch_size or 
+                          (len(batch) > 0 and current_time - last_send_time > 2))
             
-            if success:
-                app.append_log(f"✅ API: Data {data['type']} berhasil dikirim")
-            else:
-                app.append_log(f"❌ API: Gagal mengirim data {data['type']} setelah beberapa percobaan")
-            
-            api_queue.task_done()
-            
-        except:
-            continue
-
-def send_to_api_with_retry(data, app):
-    """Fungsi kirim ke API dengan retry mechanism"""
-    for attempt in range(API_CONFIG["max_retries"]):
-        try:
-            payload = {
-                "vehicle_type": data["type"],
-                "speed_kmph": round(data["speed"], 1)
-            }
-
-            headers = {
-                "Content-Type": "application/json"
-            }
-
-            response = requests.post(
-                API_CONFIG["url"], 
-                json=payload, 
-                headers=headers, 
-                timeout=API_CONFIG["timeout"]
-            )
-            
-            if response.status_code in [200, 201]:
-                return True
-            else:
-                app.append_log(f"⚠️ API Error ({response.status_code}): {response.text}")
+            if should_send and batch:
+                success_count = 0
+                for data in batch:
+                    try:
+                        success, _ = app.api_manager.send_vehicle_data(
+                            data["vehicle_type"], data["speed"], data["timestamp"],
+                            data["track_id"], data["confidence"]
+                        )
+                        if success:
+                            success_count += 1
+                    except:
+                        pass
                 
-        except requests.exceptions.Timeout:
-            app.append_log(f"⏰ API Timeout (percobaan {attempt + 1}/{API_CONFIG['max_retries']})")
-        except requests.exceptions.ConnectionError:
-            app.append_log(f"🔌 API Connection Error (percobaan {attempt + 1}/{API_CONFIG['max_retries']})")
-        except requests.exceptions.RequestException as e:
-            app.append_log(f"❌ API Request Error: {e}")
-        
-        # Tunggu sebelum retry (kecuali percobaan terakhir)
-        if attempt < API_CONFIG["max_retries"] - 1:
-            time.sleep(API_CONFIG["retry_delay"])
-    
-    return False
-
-# -----------------------------
-# Fungsi untuk menambahkan data ke queue API
-# -----------------------------
-def queue_api_data(vehicle_type, speed, track_id=None):
-    """Menambahkan data ke queue untuk dikirim ke API"""
-    data = {
-        "type": vehicle_type,
-        "speed": speed,
-        "timestamp": datetime.now().isoformat(),
-        "track_id": track_id
-    }
-    
-    try:
-        api_queue.put_nowait(data)
-    except:
-        print("⚠️ API Queue penuh, data diabaikan")
-
-# -----------------------------
-# Frame Capturing Thread (RTSP)
-# -----------------------------
-def capture_frames(app, cap):
-    while app.running and cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
+                if success_count > 0:
+                    app.append_log(f"API: {success_count}/{len(batch)} data terkirim")
+                
+                batch = []
+                last_send_time = current_time
+                time.sleep(0.1)
+                
+        except Exception as e:
+            app.append_log(f"API Worker Error: {str(e)}")
             continue
-        if not frame_queue.full():
-            frame_queue.put(frame)
-        time.sleep(0.01)
+    
+    if batch:
+        for data in batch:
+            try:
+                app.api_manager.send_vehicle_data(
+                    data["vehicle_type"], data["speed"], data["timestamp"],
+                    data["track_id"], data["confidence"]
+                )
+            except:
+                pass
 
-# -----------------------------
-# Detection and Display Thread
-# -----------------------------
-def run_detection(app):
-    cap = cv2.VideoCapture("rtsp://admin:Bengkalis12@192.168.1.64:554")
-    cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+def classify_truck_or_pickup(bbox_width, bbox_height, bbox_area):
+    """
+    Bedain Pickup vs Truck berdasarkan UKURAN
+    Logic: Truck kecil-menengah = PICKUP (L300, Carry, dll)
+           Truck besar = TRUCK (Container, Box Truck)
+    """
+    aspect_ratio = bbox_width / bbox_height if bbox_height > 0 else 0
+    
+    # MAIN RULE: Ukuran menentukan!
+    # Pickup (L300, Carry, dll): Area kecil-menengah
+    # Truck besar (Container): Area sangat besar
+    
+    # Rule 1: Area kecil-menengah = PICKUP
+    if bbox_area < 15000:
+        return 'pickup'  # L300, Carry, pickup kecil
+    
+    # Rule 2: Area menengah + tidak terlalu tinggi = PICKUP
+    if bbox_area < 20000 and aspect_ratio > 1.2:
+        return 'pickup'  # Pickup sedang
+    
+    # Rule 3: Sangat besar = TRUCK beneran
+    if bbox_area >= 20000:
+        return 'truck'  # Container truck, box truck besar
+    
+    # Default: Cenderung pickup (karena di Indonesia banyak L300/Carry)
+    return 'pickup'
 
+def estimate_speed_simple(bbox_area, y_position, frame_height):
+    """Estimasi kecepatan sederhana"""
+    perspective_factor = (frame_height - y_position) / frame_height
+    
+    if bbox_area > 20000:
+        base_speed = 25
+    elif bbox_area > 10000:
+        base_speed = 35
+    elif bbox_area > 5000:
+        base_speed = 45
+    else:
+        base_speed = 55
+    
+    estimated_speed = base_speed * (1 + perspective_factor * 0.3)
+    
+    import random
+    variation = random.uniform(-5, 5)
+    
+    return max(15, min(80, estimated_speed + variation))
+
+# SIMPLE TRACKING - Permanent Counting
+def run_instant_detection(app):
+    cap = cv2.VideoCapture("lalulintaskota.mp4")
+    
     if not cap.isOpened():
-        app.append_log("❌ Gagal membuka kamera RTSP.")
+        app.append_log("Gagal membuka video")
         return
 
-    app.append_log("✅ Kamera berhasil dibuka.")
+    app.append_log("Video dibuka - PERMANENT COUNT MODE")
     
-    # Start API worker thread
-    api_thread = threading.Thread(target=api_worker, args=(app,), daemon=True)
-    api_thread.start()
-    app.append_log("🔄 API Worker thread dimulai.")
+    num_api_workers = 3
+    for i in range(num_api_workers):
+        threading.Thread(target=api_worker, args=(app,), daemon=True, name=f"API-Worker-{i+1}").start()
+    app.append_log(f"Started {num_api_workers} API worker threads")
     
-    fps = cap.get(cv2.CAP_PROP_FPS) or 30
-    scale_factor = 10  # pixels per meter
-    track_history = {}
+    track_frame_count = defaultdict(int)
     counted_ids = set()
+    
     vehicle_counter = {v: 0 for v in vehicle_classes}
     data_records = []
-
-    threading.Thread(target=capture_frames, args=(app, cap), daemon=True).start()
+    frame_count = 0
 
     while app.running:
-        if frame_queue.empty():
-            time.sleep(0.01)
+        ret, frame = cap.read()
+        if not ret:
+            app.append_log("Video selesai")
+            break
+            
+        frame_count += 1
+        
+        frame_height, frame_width = frame.shape[:2]
+        target_height = 720
+        target_width = int(frame_width * target_height / frame_height)
+        frame = cv2.resize(frame, (target_width, target_height))
+        
+        results = model_yolo.track(
+            frame, 
+            persist=True,
+            conf=0.20,
+            iou=0.4,
+            tracker="bytetrack.yaml",
+            verbose=False
+        )[0]
+        
+        if results.boxes is None:
+            cv2.imshow("Vehicle Detection", frame)
+            if cv2.waitKey(1) & 0xFF == 27:
+                break
             continue
-
-        frame = frame_queue.get()
-        frame = cv2.resize(frame, (640, 480))
-
-        results = model_yolo.track(frame, persist=True)[0]
+        
+        detected_count = 0
+        current_frame_ids = set()
+        
         for box in results.boxes:
             track_id = int(box.id[0]) if box.id is not None else None
-            x1, y1, x2, y2 = map(int, box.xyxy[0])
-            cls_id = int(box.cls[0])
-            class_name = model_yolo.names[cls_id]
-
-            if class_name in vehicle_classes:
-                cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
+            if track_id is None:
+                continue
                 
-                if track_id not in track_history:
-                    track_history[track_id] = (cy, time.time())
-                    continue
+            cls_id = int(box.cls[0])
+            conf = float(box.conf[0])
+            class_name = model_yolo.names[cls_id]
+            
+            x1, y1, x2, y2 = map(int, box.xyxy[0])
+            bbox_width = x2 - x1
+            bbox_height = y2 - y1
+            bbox_area = bbox_width * bbox_height
+            
+            # LOGIC PICKUP: Jika detect truck, cek apakah itu pickup atau truck beneran
+            if class_name == 'truck':
+                class_name = classify_truck_or_pickup(bbox_width, bbox_height, bbox_area)
+            
+            if class_name not in vehicle_classes:
+                continue
+            
+            min_area = vehicle_classes[class_name]['min_area']
+            min_conf = vehicle_classes[class_name]['min_conf']
+            
+            if bbox_area < min_area or conf < min_conf:
+                continue
+            
+            detected_count += 1
+            current_frame_ids.add(track_id)
+            
+            track_frame_count[track_id] += 1
+            
+            if track_id not in counted_ids and track_frame_count[track_id] >= 3:
+                counted_ids.add(track_id)
+                vehicle_counter[class_name] += 1
+                
+                y_center = (y1 + y2) // 2
+                speed = estimate_speed_simple(bbox_area, y_center, target_height)
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                
+                data_records.append([
+                    vehicle_classes[class_name]['name'],
+                    round(speed, 1),
+                    timestamp,
+                    round(conf, 2),
+                    track_id
+                ])
+                
+                app.append_log(
+                    f"COUNTED #{len(data_records)}: {vehicle_classes[class_name]['name']} "
+                    f"@ {speed:.1f} km/h (ID:{track_id}, Conf:{conf:.2f}, Frames:{track_frame_count[track_id]})"
+                )
+                
+                app.update_vehicle_count(vehicle_counter)
+                
+                if api_queue.qsize() < 100:
+                    try:
+                        api_queue.put_nowait({
+                            "vehicle_type": vehicle_classes[class_name]['name'],
+                            "speed": speed,
+                            "timestamp": timestamp,
+                            "track_id": track_id,
+                            "confidence": conf
+                        })
+                    except:
+                        pass
+                else:
+                    app.append_log("⚠ API Queue penuh, skip data")
+            
+            if track_id in counted_ids:
+                color = (0, 255, 0)
+                status = f"COUNTED #{list(counted_ids).index(track_id) + 1}"
+            elif track_frame_count[track_id] >= 2:
+                color = (0, 165, 255)
+                status = f"READY ({track_frame_count[track_id]}/3)"
+            else:
+                color = (255, 255, 0)
+                status = f"NEW ({track_frame_count[track_id]}/3)"
+            
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+            
+            label1 = f"ID:{track_id} {vehicle_classes[class_name]['name']} - {status}"
+            label2 = f"Conf:{conf:.2f}"
+            
+            cv2.putText(frame, label1, (x1, y1-25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+            cv2.putText(frame, label2, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
+        
+        all_track_ids = list(track_frame_count.keys())
+        for tid in all_track_ids:
+            if tid not in current_frame_ids and tid not in counted_ids:
+                if track_frame_count[tid] < 3:
+                    del track_frame_count[tid]
+        
+        info_text = f"Frame: {frame_count} | Active: {detected_count} | COUNTED: {len(counted_ids)}"
+        cv2.putText(frame, info_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+        
+        # UPDATE: Tampilkan counter semua kendaraan termasuk Pickup
+        counter_text = f"Mobil:{vehicle_counter.get('car',0)} Motor:{vehicle_counter.get('motorcycle',0)} Pickup:{vehicle_counter.get('pickup',0)} Bus:{vehicle_counter.get('bus',0)}"
+        cv2.putText(frame, counter_text, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
 
-                prev_cy, prev_time = track_history[track_id]
-                dt = time.time() - prev_time
-                dy = abs(cy - prev_cy)
-                distance = dy / scale_factor
-                speed = (distance / dt) * 3.6 if dt > 0 else 0
-
-                track_history[track_id] = (cy, time.time())
-
-                label = f"{class_name} | {speed:.1f} km/h"
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.putText(frame, label, (x1, y1 - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-
-                # Hanya kirim data jika kendaraan belum pernah dihitung
-                if track_id not in counted_ids:
-                    counted_ids.add(track_id)
-                    vehicle_counter[class_name] += 1
-                    timestamp = datetime.now().strftime("%H:%M:%S")
-                    data_records.append([class_name, round(speed, 1), timestamp])
-                    
-                    app.append_log(f"🚗 {class_name} lewat @ {speed:.1f} km/h")
-                    app.update_vehicle_count(vehicle_counter)
-
-                    # OTOMATIS KIRIM KE API - Masukkan ke queue
-                    queue_api_data(class_name, speed, track_id)
-
-        cv2.imshow("Deteksi Kendaraan", frame)
+        cv2.imshow("Vehicle Detection", frame)
         if cv2.waitKey(1) & 0xFF == 27:
             app.stop_detection()
             break
 
-    # Tunggu semua API request selesai sebelum menutup
-    app.append_log("⏳ Menunggu pengiriman API selesai...")
     api_queue.join()
-    
     cap.release()
     cv2.destroyAllWindows()
     app.vehicle_data = data_records
-    app.append_log("🛑 Deteksi selesai.")
+    app.append_log(f"Detection selesai! Total: {len(counted_ids)} kendaraan")
 
-# -----------------------------
-# Tkinter GUI
-# -----------------------------
+# GUI
 class VehicleDetectionApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Deteksi Kendaraan - YOLOv8 + Auto API")
-        self.root.geometry("700x650")
+        self.root.title("Vehicle Detection - with Pickup")
+        self.root.geometry("800x600")
         self.running = False
         self.vehicle_data = []
-
         self.vehicle_counter = {v: 0 for v in vehicle_classes}
+        self.api_manager = APIManager()
+        self.setup_gui()
 
-        self.main_frame = ttk.Frame(self.root, padding="10")
-        self.main_frame.pack(fill=tk.BOTH, expand=True)
-
-        self.title_label = ttk.Label(self.main_frame, text="🚦 Sistem Deteksi Kendaraan + Auto API",
-                                     font=("Helvetica", 16, "bold"))
-        self.title_label.pack(pady=10)
-
-        # Frame untuk status API
-        self.api_frame = ttk.LabelFrame(self.main_frame, text="Status API", padding="5")
-        self.api_frame.pack(fill=tk.X, pady=5)
-
-        self.api_status_label = ttk.Label(self.api_frame, text=f"🔗 API Endpoint: {API_CONFIG['url']}")
-        self.api_status_label.pack()
-
-        self.queue_status_label = ttk.Label(self.api_frame, text="📤 Queue: 0 pending")
-        self.queue_status_label.pack()
-
-        self.count_label = ttk.Label(self.main_frame, text="Jumlah Kendaraan: -",
-                                     font=("Helvetica", 12))
-        self.count_label.pack(pady=5)
-
-        self.button_frame = ttk.Frame(self.main_frame)
-        self.button_frame.pack(pady=10)
-
-        self.btn_start = ttk.Button(self.button_frame, text="▶ Start", command=self.start_detection)
-        self.btn_start.grid(row=0, column=0, padx=5)
-
-        self.btn_stop = ttk.Button(self.button_frame, text="⏹ Stop", command=self.stop_detection, state='disabled')
-        self.btn_stop.grid(row=0, column=1, padx=5)
-
-        self.btn_save = ttk.Button(self.button_frame, text="💾 Simpan Data", command=self.save_data)
-        self.btn_save.grid(row=0, column=2, padx=5)
-
-        self.btn_test_api = ttk.Button(self.button_frame, text="🔧 Test API", command=self.test_api)
-        self.btn_test_api.grid(row=0, column=3, padx=5)
-
-        self.txt_log = scrolledtext.ScrolledText(self.main_frame, width=80, height=20,
-                                                 font=("Courier", 10))
-        self.txt_log.pack(pady=10)
-
-        # Update queue status secara berkala
-        self.update_queue_status()
-
-    def update_queue_status(self):
-        """Update status queue API secara berkala"""
-        queue_size = api_queue.qsize()
-        self.queue_status_label.config(text=f"📤 Queue: {queue_size} pending")
-        self.root.after(1000, self.update_queue_status)  # Update setiap detik
-
-    def test_api(self):
-        """Test koneksi ke API"""
-        self.append_log("🔧 Testing API connection...")
-        test_data = {
-            "type": "test",
-            "speed": 0.0,
-            "timestamp": datetime.now().isoformat(),
-            "track_id": "test"
-        }
+    def setup_gui(self):
+        main_frame = ttk.Frame(self.root, padding=10)
+        main_frame.pack(fill=tk.BOTH, expand=True)
         
-        def test_thread():
-            success = send_to_api_with_retry(test_data, self)
-            if success:
-                self.append_log("✅ API Test berhasil!")
-            else:
-                self.append_log("❌ API Test gagal!")
+        title = ttk.Label(main_frame, 
+                         text="Vehicle Detection System", 
+                         font=("Helvetica", 18, "bold"))
+        title.pack(pady=10)
         
-        threading.Thread(target=test_thread, daemon=True).start()
-
-    def append_log(self, message):
-        def update_log():
-            timestamp = datetime.now().strftime("%H:%M:%S")
-            self.txt_log.insert(tk.END, f"[{timestamp}] {message}\n")
-            self.txt_log.see(tk.END)
-        self.txt_log.after(0, update_log)
-
-    def update_vehicle_count(self, counter):
-        count_text = "Jumlah Kendaraan:\n" + "\n".join(f"{k}: {v}" for k, v in counter.items() if v > 0)
-        def update_count():
-            self.count_label.config(text=count_text)
-        self.count_label.after(0, update_count)
+        subtitle = ttk.Label(main_frame,
+                            text="Deteksi: Mobil, Motor, Sepeda, Bus, Truk, Pickup", 
+                            font=("Helvetica", 11))
+        subtitle.pack()
+        
+        self.count_label = ttk.Label(main_frame, 
+                                    text="Belum ada kendaraan terdeteksi", 
+                                    font=("Helvetica", 12, "bold"))
+        self.count_label.pack(pady=15)
+        
+        btn_frame = ttk.Frame(main_frame)
+        btn_frame.pack(pady=10)
+        
+        ttk.Button(btn_frame, text="Start", 
+                  command=self.start_detection, width=15).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Stop", 
+                  command=self.stop_detection, width=15).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Save", 
+                  command=self.save_data, width=15).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Clear Log", 
+                  command=self.clear_log, width=15).pack(side=tk.LEFT, padx=5)
+        
+        log_frame = ttk.LabelFrame(main_frame, text="Log Deteksi", padding=5)
+        log_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+        
+        self.txt_log = scrolledtext.ScrolledText(log_frame, width=90, height=20,
+                                                 font=("Consolas", 9))
+        self.txt_log.pack(fill=tk.BOTH, expand=True)
 
     def start_detection(self):
         if self.running:
-            messagebox.showinfo("Info", "Deteksi sedang berjalan.")
+            messagebox.showinfo("Info", "Detection sudah berjalan")
             return
+        
         self.running = True
-        self.btn_start.config(state='disabled')
-        self.btn_stop.config(state='normal')
         self.txt_log.delete("1.0", tk.END)
         self.vehicle_counter = {v: 0 for v in vehicle_classes}
+        self.vehicle_data = []
         self.update_vehicle_count(self.vehicle_counter)
-        self.append_log("🚀 Memulai deteksi dengan auto API sync...")
-        threading.Thread(target=run_detection, args=(self,), daemon=True).start()
+        
+        threading.Thread(target=run_instant_detection, args=(self,), daemon=True).start()
+        self.append_log("=== DETECTION STARTED ===")
+        self.append_log("Sistem: Permanent counting - hitung sekali per ID")
+        self.append_log("Kendaraan: Mobil, Motor, Sepeda, Bus, Truk, Pickup")
+        self.append_log("Syarat: Track harus muncul minimal 3 frame")
 
     def stop_detection(self):
+        if not self.running:
+            messagebox.showinfo("Info", "Detection tidak berjalan")
+            return
         self.running = False
-        self.btn_start.config(state='normal')
-        self.btn_stop.config(state='disabled')
-        self.append_log("🛑 Menghentikan deteksi...")
+        self.append_log("Stopping detection...")
+
+    def clear_log(self):
+        self.txt_log.delete("1.0", tk.END)
+
+    def append_log(self, message):
+        timestamp = datetime.now().strftime('%H:%M:%S')
+        self.txt_log.insert(tk.END, f"[{timestamp}] {message}\n")
+        self.txt_log.see(tk.END)
+
+    def update_vehicle_count(self, counter):
+        text = "Kendaraan Terdeteksi:\n"
+        total = 0
+        for k, v in counter.items():
+            if v > 0:
+                text += f"{vehicle_classes[k]['name']}: {v}  "
+                total += v
+        text += f"\n\nTOTAL: {total} kendaraan"
+        self.count_label.config(text=text)
 
     def save_data(self):
         if not self.vehicle_data:
-            messagebox.showwarning("⚠️ Tidak Ada Data", "Belum ada data kendaraan untuk disimpan.")
+            messagebox.showwarning("Warning", "Tidak ada data")
             return
-        df = pd.DataFrame(self.vehicle_data, columns=["Jenis", "Kecepatan (km/h)", "Waktu"])
-        filename = f"data_kendaraan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-        df.to_csv(filename, index=False)
-        messagebox.showinfo("✅ Berhasil", f"Data berhasil disimpan ke {filename}")
+        
+        try:
+            df = pd.DataFrame(self.vehicle_data, 
+                            columns=["Vehicle", "Speed", "Time", "Confidence", "ID"])
+            filename = f"detection_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            df.to_csv(filename, index=False)
+            
+            messagebox.showinfo("Success", f"Data disimpan: {filename}")
+            self.append_log(f"Data saved: {filename}")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
-# -----------------------------
-# Run the GUI
-# -----------------------------
 if __name__ == "__main__":
     root = tk.Tk()
     app = VehicleDetectionApp(root)
-    root.mainloop()
+    try:
+        root.mainloop()
+    except KeyboardInterrupt:
+        app.running = False
+        print("App terminated")
