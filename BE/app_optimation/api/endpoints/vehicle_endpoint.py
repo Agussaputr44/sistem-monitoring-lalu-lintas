@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.database.session import SessionLocal
-from app.services import vehicle_service
+from app_optimation.database.session import SessionLocal
+from app_optimation.services import vehicle_service
 from pydantic import BaseModel
 
-# Prefix umum untuk sistem monitoring lalu lintas
 router = APIRouter(prefix="/api", tags=["Traffic Monitoring"])
 
 # Dependency untuk koneksi database
@@ -15,7 +14,6 @@ def get_db():
     finally:
         db.close()
 
-
 # Schema input untuk data hasil deteksi YOLO
 class VehicleIn(BaseModel):
     vehicle_type: str
@@ -24,51 +22,40 @@ class VehicleIn(BaseModel):
     track_id: int = 0
     location: str = "Camera Bengkalis"
 
-
 # ===============================
 # === Endpoint untuk YOLO save ===
 # ===============================
 @router.post("/vehicle-detections")
-def create_vehicle(data: VehicleIn, db: Session = Depends(get_db)):
+async def create_vehicle(data: VehicleIn, db: Session = Depends(get_db)):
     """
     Menyimpan hasil deteksi kendaraan dari YOLO ke database
+    dan otomatis menghapus cache Redis agar data baru langsung tampil.
     """
     return vehicle_service.save_detection(
-        db, data.vehicle_type, data.speed_kmph, data.confidence, data.track_id, data.location
+        db=db,
+        vehicle_type=data.vehicle_type,
+        speed_kmph=data.speed_kmph,
+        confidence=data.confidence,
+        track_id=data.track_id,
+        location=data.location
     )
-
 
 # ========================================
 # === Endpoint utama sesuai rancangan ===
 # ========================================
 
 @router.get("/traffic-classification")
-def get_traffic_classification(db: Session = Depends(get_db)):
-    """
-    Ambil semua data hasil klasifikasi kendaraan (setara statistik kendaraan)
-    """
-    return vehicle_service.get_all_classification(db)
-
+async def get_traffic_classification(db: Session = Depends(get_db)):
+    return await vehicle_service.get_all_classification(db)
 
 @router.get("/traffic-history")
-def get_traffic_history(db: Session = Depends(get_db)):
-    """
-    Ambil semua data history lalu lintas
-    """
-    return vehicle_service.get_history(db)
-
+async def get_traffic_history(db: Session = Depends(get_db)):
+    return await vehicle_service.get_history(db)
 
 @router.get("/traffic-history/{history_id}")
-def get_traffic_history_by_id(history_id: int, db: Session = Depends(get_db)):
-    """
-    Ambil data history berdasarkan ID
-    """
-    return vehicle_service.get_history_by_id(db, history_id)
-
+async def get_traffic_history_by_id(history_id: int, db: Session = Depends(get_db)):
+    return await vehicle_service.get_history_by_id(db, history_id)
 
 @router.get("/average-speed")
-def get_average_speed(db: Session = Depends(get_db)):
-    """
-    Mengambil data rata-rata kecepatan kendaraan
-    """
-    return vehicle_service.get_average_speed(db)
+async def get_average_speed(db: Session = Depends(get_db)):
+    return await vehicle_service.get_average_speed(db)
