@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:webview_flutter/webview_flutter.dart'; 
 
 import '../../domain/entities/traffic.dart';
 import '../bloc/traffic_bloc.dart';
+
+const String _kWorkerApiBaseUrl = 'http://192.168.1.10:8001'; 
 
 class TrafficHistoryPage extends StatefulWidget {
   const TrafficHistoryPage({super.key});
@@ -19,26 +22,44 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
   DateTimeRange? selectedRange;
   Timer? _refreshTimer;
   final ScrollController _scrollController = ScrollController();
-  List<Traffic> _cachedTraffics = []; // Cache data terakhir
-  String _selectedTimeRange = 'all'; // 'all', '15min', '30min', '1hour', '3hours', 'today'
-  String _selectedVehicleType = 'all'; // 'all', 'car', 'truck', 'motorcycle', 'bus'
+  List<Traffic> _cachedTraffics = []; 
+  String _selectedTimeRange = 'all';
+  String _selectedVehicleType = 'all'; 
   
-  // Infinite scroll variables
-  int _displayedItemCount = 20; // Mulai dengan 20 item
+  int _displayedItemCount = 20;
   static const int _itemsPerPage = 20;
   bool _isLoadingMore = false;
+
+  late final WebViewController _controller; 
 
   @override
   void initState() {
     super.initState();
-    // Auto refresh setiap 5 detik
+    
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            // progress loading
+          },
+          onPageStarted: (String url) {},
+          onPageFinished: (String url) {},
+          onWebResourceError: (WebResourceError error) {
+            if (error.errorCode != -2 && mounted) {
+            }
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse('$_kWorkerApiBaseUrl/video_feed')); 
+
     _refreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (mounted) {
         context.read<TrafficBloc>().add(FetchTrafficData());
       }
     });
     
-    // Scroll listener untuk infinite scroll
     _scrollController.addListener(_onScroll);
   }
 
@@ -55,7 +76,6 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
         _displayedItemCount += _itemsPerPage;
       });
       
-      // Simulate loading delay
       Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted) {
           setState(() => _isLoadingMore = false);
@@ -83,7 +103,6 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
           style: kHeading6,
         ),
         actions: [
-          // Indicator auto-refresh
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
@@ -117,12 +136,10 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
       ),
       body: BlocBuilder<TrafficBloc, TrafficState>(
         builder: (context, state) {
-          // Update cache saat data baru masuk
           if (state is TrafficLoaded) {
             _cachedTraffics = state.data;
           }
           
-          // Selalu tampilkan data dari cache (tidak ada loading state)
           if (_cachedTraffics.isNotEmpty) {
             final traffics = _filterTraffics(_cachedTraffics);
             return CustomScrollView(
@@ -133,11 +150,13 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
                   padding: const EdgeInsets.all(16.0),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
+                      const SizedBox(height: 16),
+                      _buildTimeRangeFilter(),
                       _buildMainKpiRow(traffics),
                       const SizedBox(height: 12),
                       _buildTypeKpiRow(traffics),
                       const SizedBox(height: 16),
-                      _buildTimeRangeFilter(),
+                      _buildVehicleStreamPlayer(),
                       const SizedBox(height: 12),
                       _buildVehicleTypeFilter(),
                       const SizedBox(height: 12),
@@ -197,7 +216,6 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
               ),
             );
           } else {
-            // Initial loading state - hanya muncul sekali di awal
             return const Center(
               child: CircularProgressIndicator(color: kPrimaryTeal),
             );
@@ -214,11 +232,50 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     );
   }
 
-  // Filter traffics berdasarkan date range, time range, dan vehicle type
+  Widget _buildVehicleStreamPlayer() {
+    return Card(
+      color: kSurfaceDark,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              "Live Traffic Stream",
+              style: kHeading6.copyWith(fontSize: 14, color: kTextSecondary),
+            ),
+          ),
+          Container(
+            height: 200, // Ketinggian video stream
+            margin: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: kPrimaryTeal.withOpacity(0.5), width: 1),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: WebViewWidget(controller: _controller), // Tampilkan WebView
+            ),
+          ),
+          Padding(
+             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+             child: Text(
+                'Mengakses $_kWorkerApiBaseUrl/video_feed',
+                style: kSubtitle.copyWith(fontSize: 10, color: Colors.white54),
+             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   List<Traffic> _filterTraffics(List<Traffic> traffics) {
     var filtered = traffics;
 
-    // Filter by time range
     if (_selectedTimeRange != 'all') {
       final now = DateTime.now();
       DateTime cutoffTime;
@@ -246,12 +303,10 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
       filtered = filtered.where((t) => t.detectedAt.isAfter(cutoffTime)).toList();
     }
 
-    // Filter by vehicle type
     if (_selectedVehicleType != 'all') {
       filtered = filtered.where((t) => t.vehicleType == _selectedVehicleType).toList();
     }
 
-    // Filter by custom date range (dari date picker)
     if (selectedRange != null) {
       filtered = filtered.where((t) {
         final date = t.detectedAt;
@@ -260,7 +315,6 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
       }).toList();
     }
 
-    // Reset displayed item count when filter changes
     if (filtered.length < _displayedItemCount) {
       _displayedItemCount = 20;
     }
@@ -268,7 +322,6 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     return filtered;
   }
 
-  // 🧮 KPI Utama (Optimized)
   Widget _buildMainKpiRow(List<Traffic> traffics) {
     final total = traffics.length;
     final avgSpeed = traffics.isNotEmpty
@@ -310,7 +363,6 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     );
   }
 
-  // 🚗 KPI per Jenis Kendaraan (Optimized Grid)
   Widget _buildTypeKpiRow(List<Traffic> traffics) {
     final grouped = <String, int>{};
     for (var t in traffics) {
@@ -408,7 +460,6 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     );
   }
 
-  // 🕐 Time Range Filter
   Widget _buildTimeRangeFilter() {
     final timeRanges = {
       'all': 'Semua Waktu',
@@ -453,7 +504,6 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
                   onSelected: (selected) {
                     setState(() {
                       _selectedTimeRange = entry.key;
-                      // Reset custom date range jika memilih time range
                       if (entry.key != 'all') {
                         selectedRange = null;
                       }
@@ -468,7 +518,6 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     );
   }
 
-  // 🚗 Vehicle Type Filter
   Widget _buildVehicleTypeFilter() {
     final vehicleTypes = {
       'all': {'label': 'Semua', 'icon': Icons.dashboard, 'color': kTextPrimary},
@@ -527,7 +576,6 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     );
   }
 
-  // 📅 Filter Section (Custom Date Range)
   Widget _buildFilterSection(BuildContext context) {
     final rangeText = selectedRange == null
         ? "Pilih rentang tanggal"
@@ -553,7 +601,10 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
           ),
         );
         if (picked != null) {
-          setState(() => selectedRange = picked);
+          setState(() {
+            selectedRange = picked;
+            _selectedTimeRange = 'all'; 
+          });
         }
       },
       child: Container(
@@ -582,13 +633,11 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     );
   }
 
-  // 📈 Line Chart Volume Kendaraan per Jam - Minimalist Design
 Widget _buildVehicleVolumeChart(List<Traffic> traffics) {
   if (traffics.isEmpty) {
     return const SizedBox.shrink();
   }
 
-  // Group by hour
   final grouped = <int, int>{};
   for (var t in traffics) {
     final hour = t.detectedAt.hour;
@@ -597,7 +646,10 @@ Widget _buildVehicleVolumeChart(List<Traffic> traffics) {
 
   final sortedEntries = grouped.entries.toList()
     ..sort((a, b) => a.key.compareTo(b.key));
-  final maxY = sortedEntries.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble();
+  
+  final maxY = sortedEntries.isNotEmpty 
+      ? sortedEntries.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble() 
+      : 1.0;
 
   return Card(
     color: kSurfaceDark,

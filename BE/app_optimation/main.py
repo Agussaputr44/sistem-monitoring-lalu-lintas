@@ -20,6 +20,5 @@ async def startup_event():
     FastAPICache.init(backend, prefix="traffic-cache")
     print("✅ Redis cache connected and initialized")
 
-# ⛔️ Router HARUS DIIMPORT SETELAH FastAPICache.init()
 from app_optimation.api.endpoints.vehicle_endpoint import router as vehicle_router
 app.include_router(vehicle_router)

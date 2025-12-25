@@ -22,9 +22,10 @@ services:
       - "6379:6379"
     restart: always
 
-  fastapi:
+  # ✅ Service untuk app_optimation
+  app_optimation:
     build: .
-    container_name: traffic-fastapi
+    container_name: traffic-app-optimation
     ports:
       - "8000:8000"
     environment:
@@ -41,12 +42,43 @@ services:
       - redis
     volumes:
       - .:/app
+    working_dir: /app
     command: >
       sh -c "
       apt-get update && apt-get install -y netcat-openbsd &&
       until nc -z mysql 3306; do echo '⏳ Waiting for MySQL...'; sleep 2; done &&
       until nc -z redis 6379; do echo '⏳ Waiting for Redis...'; sleep 2; done &&
       uvicorn app_optimation.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+
+  # ✅ Service untuk app (baseline)
+  app_baseline:
+    build: .
+    container_name: traffic-app-baseline
+    ports:
+      - "8001:8000"
+    environment:
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: traffic_monitoring
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: >
+      sh -c "
+      apt-get update && apt-get install -y netcat-openbsd &&
+      until nc -z mysql 3306; do echo '⏳ Waiting for MySQL...'; sleep 2; done &&
+      until nc -z redis 6379; do echo '⏳ Waiting for Redis...'; sleep 2; done &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
       "
 
 volumes:
