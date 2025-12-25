@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:webview_flutter/webview_flutter.dart'; 
+import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../domain/entities/traffic.dart';
 import '../bloc/traffic_bloc.dart';
 
-const String _kWorkerApiBaseUrl = 'http://192.168.1.10:8001'; 
+// --- KONFIGURASI URL STREAM ---
+const String _kWorkerApiBaseUrl = 'https://e94d13823346.ngrok-free.app';
+// ------------------------------
 
 class TrafficHistoryPage extends StatefulWidget {
   const TrafficHistoryPage({super.key});
@@ -22,49 +24,44 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
   DateTimeRange? selectedRange;
   Timer? _refreshTimer;
   final ScrollController _scrollController = ScrollController();
-  List<Traffic> _cachedTraffics = []; 
+  List<Traffic> _cachedTraffics = [];
   String _selectedTimeRange = 'all';
-  String _selectedVehicleType = 'all'; 
-  
+  String _selectedVehicleType = 'all';
+
   int _displayedItemCount = 20;
   static const int _itemsPerPage = 20;
   bool _isLoadingMore = false;
 
-  late final WebViewController _controller; 
+  late final WebViewController _controller;
 
   @override
   void initState() {
     super.initState();
-    
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
         NavigationDelegate(
-          onProgress: (int progress) {
-            // progress loading
-          },
-          onPageStarted: (String url) {},
-          onPageFinished: (String url) {},
           onWebResourceError: (WebResourceError error) {
-            if (error.errorCode != -2 && mounted) {
-            }
+            debugPrint('Stream Error: ${error.description}');
           },
         ),
       )
-      ..loadRequest(Uri.parse('$_kWorkerApiBaseUrl/video_feed')); 
-
+      // TAMBAHKAN HEADER DI SINI
+      ..loadRequest(Uri.parse('$_kWorkerApiBaseUrl/video_feed'));
+    // Auto-refresh data setiap 5 detik
     _refreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (mounted) {
         context.read<TrafficBloc>().add(FetchTrafficData());
       }
     });
-    
+
     _scrollController.addListener(_onScroll);
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       _loadMoreItems();
     }
   }
@@ -75,7 +72,7 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
         _isLoadingMore = true;
         _displayedItemCount += _itemsPerPage;
       });
-      
+
       Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted) {
           setState(() => _isLoadingMore = false);
@@ -88,6 +85,7 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
   void dispose() {
     _refreshTimer?.cancel();
     _scrollController.dispose();
+    // WebView controller tidak perlu didispose secara eksplisit di versi baru
     super.dispose();
   }
 
@@ -98,10 +96,7 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
       appBar: AppBar(
         backgroundColor: kSurfaceDark,
         elevation: 0,
-        title: Text(
-          "Traffic Monitoring Dashboard",
-          style: kHeading6,
-        ),
+        title: Text("Traffic Monitoring Dashboard", style: kHeading6),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -126,7 +121,10 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
                   const SizedBox(width: 6),
                   Text(
                     "Live",
-                    style: kSubtitle.copyWith(fontSize: 12, color: kSuccessGreen),
+                    style: kSubtitle.copyWith(
+                      fontSize: 12,
+                      color: kSuccessGreen,
+                    ),
                   ),
                 ],
               ),
@@ -139,7 +137,7 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
           if (state is TrafficLoaded) {
             _cachedTraffics = state.data;
           }
-          
+
           if (_cachedTraffics.isNotEmpty) {
             final traffics = _filterTraffics(_cachedTraffics);
             return CustomScrollView(
@@ -154,10 +152,14 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
                       _buildTimeRangeFilter(),
                       _buildMainKpiRow(traffics),
                       const SizedBox(height: 12),
+                      // Grid KPI per Tipe Kendaraan (Updated)
                       _buildTypeKpiRow(traffics),
                       const SizedBox(height: 16),
+                      // === VIDEO STREAM PLAYER ===
                       _buildVehicleStreamPlayer(),
+                      // ===========================
                       const SizedBox(height: 12),
+                      // Filter Tipe Kendaraan (Updated)
                       _buildVehicleTypeFilter(),
                       const SizedBox(height: 12),
                       _buildFilterSection(context),
@@ -168,11 +170,14 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Riwayat Traffic",
+                            "Riwayat Traffic Terkini",
                             style: kHeading6.copyWith(fontSize: 16),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: kPrimaryTeal.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(12),
@@ -192,7 +197,7 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
                     ]),
                   ),
                 ),
-                // Optimized list with lazy loading
+                // List Riwayat (Optimized)
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: _buildOptimizedTrafficList(traffics),
@@ -232,50 +237,99 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     );
   }
 
+  // --- WIDGET VIDEO STREAM ---
   Widget _buildVehicleStreamPlayer() {
     return Card(
       color: kSurfaceDark,
-      elevation: 2,
+      elevation: 4, // Sedikit lebih menonjol
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              "Live Traffic Stream",
-              style: kHeading6.copyWith(fontSize: 14, color: kTextSecondary),
+            child: Row(
+              children: [
+                Icon(Icons.videocam, color: kPrimaryTeal, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  "Live CCTV Stream",
+                  style: kHeading6.copyWith(
+                    fontSize: 14,
+                    color: kTextSecondary,
+                  ),
+                ),
+                const Spacer(),
+                // Indikator Live Berkedip
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: kDangerRed,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    "LIVE",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+          // Container Video
           Container(
-            height: 200, // Ketinggian video stream
-            margin: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: kPrimaryTeal.withOpacity(0.5), width: 1),
-            ),
+            height: 220,
+            width: double.infinity,
+            color: Colors.black,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: WebViewWidget(controller: _controller), // Tampilkan WebView
+              child: Image.network(
+                '$_kWorkerApiBaseUrl/video_feed',
+
+                headers: const {
+                  'ngrok-skip-browser-warning': 'any',
+                  'bypass-tunnel-reminder': 'true',
+                  'User-Agent': 'Mozilla/5.0',
+                },
+
+                fit: BoxFit.contain,
+                // Placeholder saat koneksi sedang dibangun
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(child: CircularProgressIndicator());
+                },
+                // Penanganan jika engine python mati atau error
+                errorBuilder: (context, error, stackTrace) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.videocam_off, color: Colors.white24, size: 48),
+                      SizedBox(height: 8),
+                      Text(
+                        "Stream Offline",
+                        style: TextStyle(color: Colors.white54),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
-          Padding(
-             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-             child: Text(
-                'Mengakses $_kWorkerApiBaseUrl/video_feed',
-                style: kSubtitle.copyWith(fontSize: 10, color: Colors.white54),
-             ),
           ),
         ],
       ),
     );
   }
 
-
   List<Traffic> _filterTraffics(List<Traffic> traffics) {
     var filtered = traffics;
 
+    // Filter Waktu
     if (_selectedTimeRange != 'all') {
       final now = DateTime.now();
       DateTime cutoffTime;
@@ -299,22 +353,31 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
         default:
           cutoffTime = DateTime(2000);
       }
-
-      filtered = filtered.where((t) => t.detectedAt.isAfter(cutoffTime)).toList();
+      filtered = filtered
+          .where((t) => t.detectedAt.isAfter(cutoffTime))
+          .toList();
     }
 
+    // Filter Tipe Kendaraan (Case-Insensitive Comparison)
     if (_selectedVehicleType != 'all') {
-      filtered = filtered.where((t) => t.vehicleType == _selectedVehicleType).toList();
+      filtered = filtered
+          .where((t) => t.vehicleType.toLowerCase() == _selectedVehicleType)
+          .toList();
     }
 
+    // Filter Custom Date Range
     if (selectedRange != null) {
       filtered = filtered.where((t) {
         final date = t.detectedAt;
-        return date.isAfter(selectedRange!.start.subtract(const Duration(days: 1))) &&
+        // Menambahkan buffer 1 hari agar mencakup seluruh tanggal start & end
+        return date.isAfter(
+              selectedRange!.start.subtract(const Duration(days: 1)),
+            ) &&
             date.isBefore(selectedRange!.end.add(const Duration(days: 1)));
       }).toList();
     }
 
+    // Reset pagination jika hasil filter sedikit
     if (filtered.length < _displayedItemCount) {
       _displayedItemCount = 20;
     }
@@ -363,17 +426,47 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     );
   }
 
+  // --- GRID KPI TIPE KENDARAAN (UPDATED) ---
   Widget _buildTypeKpiRow(List<Traffic> traffics) {
     final grouped = <String, int>{};
     for (var t in traffics) {
-      grouped[t.vehicleType] = (grouped[t.vehicleType] ?? 0) + 1;
+      // Gunakan lowercase untuk pengelompokan yang konsisten
+      final type = t.vehicleType.toLowerCase();
+      grouped[type] = (grouped[type] ?? 0) + 1;
     }
 
+    // Data 5 Tipe Kendaraan
     final vehicleData = [
-      {'type': 'car', 'icon': Icons.directions_car, 'color': Colors.lightBlueAccent},
-      {'type': 'truck', 'icon': Icons.local_shipping, 'color': Colors.orange},
-      {'type': 'motorcycle', 'icon': Icons.motorcycle, 'color': Colors.purpleAccent},
-      {'type': 'bus', 'icon': Icons.directions_bus, 'color': Colors.greenAccent},
+      {
+        'type': 'mobil',
+        'label': 'MOBIL',
+        'icon': Icons.directions_car,
+        'color': Colors.lightBlueAccent,
+      },
+      {
+        'type': 'motor',
+        'label': 'MOTOR',
+        'icon': Icons.motorcycle,
+        'color': Colors.purpleAccent,
+      },
+      {
+        'type': 'truk',
+        'label': 'TRUK',
+        'icon': Icons.local_shipping,
+        'color': Colors.redAccent,
+      },
+      {
+        'type': 'pickup',
+        'label': 'PICKUP',
+        'icon': Icons.front_loader,
+        'color': Colors.orangeAccent,
+      },
+      {
+        'type': 'bus',
+        'label': 'BUS',
+        'icon': Icons.directions_bus,
+        'color': Colors.greenAccent,
+      },
     ];
 
     return GridView.builder(
@@ -388,9 +481,10 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
       itemCount: vehicleData.length,
       itemBuilder: (context, index) {
         final data = vehicleData[index];
+        // Ambil jumlah berdasarkan key lowercase
         final count = grouped[data['type']] ?? 0;
         return _buildCompactKpiCard(
-          (data['type'] as String).toUpperCase(),
+          data['label'] as String,
           "$count",
           data['icon'] as IconData,
           data['color'] as Color,
@@ -430,7 +524,12 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     );
   }
 
-  Widget _buildCompactKpiCard(String label, String value, IconData icon, Color color) {
+  Widget _buildCompactKpiCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       color: kSurfaceDark,
       elevation: 2,
@@ -518,20 +617,42 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     );
   }
 
+  // --- FILTER CHIP TIPE KENDARAAN (UPDATED) ---
   Widget _buildVehicleTypeFilter() {
     final vehicleTypes = {
       'all': {'label': 'Semua', 'icon': Icons.dashboard, 'color': kTextPrimary},
-      'car': {'label': 'Mobil', 'icon': Icons.directions_car, 'color': Colors.lightBlueAccent},
-      'truck': {'label': 'Truk', 'icon': Icons.local_shipping, 'color': Colors.orange},
-      'motorcycle': {'label': 'Motor', 'icon': Icons.motorcycle, 'color': Colors.purpleAccent},
-      'bus': {'label': 'Bus', 'icon': Icons.directions_bus, 'color': Colors.greenAccent},
+      'mobil': {
+        'label': 'Mobil',
+        'icon': Icons.directions_car,
+        'color': Colors.lightBlueAccent,
+      },
+      'motor': {
+        'label': 'Motor',
+        'icon': Icons.motorcycle,
+        'color': Colors.purpleAccent,
+      },
+      'truk': {
+        'label': 'Truk',
+        'icon': Icons.local_shipping,
+        'color': Colors.redAccent,
+      },
+      'pickup': {
+        'label': 'Pickup',
+        'icon': Icons.front_loader,
+        'color': Colors.orangeAccent,
+      },
+      'bus': {
+        'label': 'Bus',
+        'icon': Icons.directions_bus,
+        'color': Colors.greenAccent,
+      },
     };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Jenis Kendaraan",
+          "Filter Jenis Kendaraan",
           style: kSubtitle.copyWith(fontSize: 12, color: Colors.white54),
         ),
         const SizedBox(height: 8),
@@ -547,8 +668,9 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
                   selected: isSelected,
                   avatar: Icon(
                     data['icon'] as IconData,
-                    size: 18,
-                    color: isSelected ? data['color'] as Color : Colors.white54,
+                    size: 16,
+                    // Warna icon putih jika dipilih, warna asli jika tidak
+                    color: isSelected ? Colors.white : (data['color'] as Color),
                   ),
                   label: Text(
                     data['label'] as String,
@@ -558,8 +680,8 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
                     ),
                   ),
                   backgroundColor: kSurfaceDark,
-                  selectedColor: (data['color'] as Color).withOpacity(0.2),
-                  checkmarkColor: data['color'] as Color,
+                  selectedColor: (data['color'] as Color).withOpacity(0.4),
+                  checkmarkColor: Colors.white,
                   side: BorderSide(
                     color: isSelected ? data['color'] as Color : Colors.white24,
                     width: 1,
@@ -578,7 +700,7 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
 
   Widget _buildFilterSection(BuildContext context) {
     final rangeText = selectedRange == null
-        ? "Pilih rentang tanggal"
+        ? "Pilih rentang tanggal kustom"
         : "${DateFormat('dd MMM').format(selectedRange!.start)} - ${DateFormat('dd MMM').format(selectedRange!.end)}";
 
     return InkWell(
@@ -603,7 +725,7 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
         if (picked != null) {
           setState(() {
             selectedRange = picked;
-            _selectedTimeRange = 'all'; 
+            _selectedTimeRange = 'all';
           });
         }
       },
@@ -633,241 +755,326 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     );
   }
 
-Widget _buildVehicleVolumeChart(List<Traffic> traffics) {
-  if (traffics.isEmpty) {
-    return const SizedBox.shrink();
-  }
+  Widget _buildVehicleVolumeChart(List<Traffic> traffics) {
+    if (traffics.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
-  final grouped = <int, int>{};
-  for (var t in traffics) {
-    final hour = t.detectedAt.hour;
-    grouped[hour] = (grouped[hour] ?? 0) + 1;
-  }
+    final grouped = <int, int>{};
+    for (var t in traffics) {
+      final hour = t.detectedAt.hour;
+      grouped[hour] = (grouped[hour] ?? 0) + 1;
+    }
 
-  final sortedEntries = grouped.entries.toList()
-    ..sort((a, b) => a.key.compareTo(b.key));
-  
-  final maxY = sortedEntries.isNotEmpty 
-      ? sortedEntries.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble() 
-      : 1.0;
+    final sortedEntries = grouped.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
 
-  return Card(
-    color: kSurfaceDark,
-    elevation: 0,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Volume per Jam",
-            style: kHeading6.copyWith(fontSize: 14, color: kTextSecondary),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            height: 180,
-            child: LineChart(
-              LineChartData(
-                maxY: maxY + (maxY * 0.1),
-                minY: 0,
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: maxY > 5 ? (maxY / 4).ceilToDouble() : 1,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.white.withOpacity(0.05),
-                    strokeWidth: 1,
-                  ),
-                ),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            "${value.toInt()}",
-                            style: kSubtitle.copyWith(fontSize: 10, color: Colors.white24),
-                          ),
-                        );
-                      },
-                      reservedSize: 24,
+    final maxY = sortedEntries.isNotEmpty
+        ? sortedEntries
+              .map((e) => e.value)
+              .reduce((a, b) => a > b ? a : b)
+              .toDouble()
+        : 1.0;
+
+    return Card(
+      color: kSurfaceDark,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Volume per Jam (Berdasarkan Filter)",
+              style: kHeading6.copyWith(fontSize: 14, color: kTextSecondary),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 180,
+              child: LineChart(
+                LineChartData(
+                  maxY: maxY + (maxY * 0.1),
+                  minY: 0,
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: maxY > 5
+                        ? (maxY / 4).ceilToDouble()
+                        : 1,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: Colors.white.withOpacity(0.05),
+                      strokeWidth: 1,
                     ),
                   ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: maxY > 5 ? (maxY / 4).ceilToDouble() : 1,
-                      reservedSize: 28,
-                      getTitlesWidget: (value, meta) {
-                        if (value == 0) return const SizedBox.shrink();
-                        return Text(
-                          value.toInt().toString(),
-                          style: kSubtitle.copyWith(fontSize: 10, color: Colors.white24),
-                        );
-                      },
-                    ),
-                  ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                borderData: FlBorderData(
-                  show: true,
-                  border: Border(
-                    bottom: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-                    left: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-                  ),
-                ),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: sortedEntries
-                        .map((e) => FlSpot(e.key.toDouble(), e.value.toDouble()))
-                        .toList(),
-                    isCurved: true,
-                    gradient: LinearGradient(
-                      colors: [kPrimaryTeal, kPrimaryTeal.withOpacity(0.5)],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                    barWidth: 3,
-                    isStrokeCapRound: true,
-                    dotData: FlDotData(
-                      show: true,
-                      getDotPainter: (spot, percent, bar, index) {
-                        return FlDotCirclePainter(
-                          radius: 3,
-                          color: kPrimaryTeal,
-                          strokeWidth: 0,
-                        );
-                      },
-                    ),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        colors: [
-                          kPrimaryTeal.withOpacity(0.15),
-                          kPrimaryTeal.withOpacity(0.0)
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+                  titlesData: FlTitlesData(
+                    show: true,
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              "${value.toInt()}:00",
+                              style: kSubtitle.copyWith(
+                                fontSize: 10,
+                                color: Colors.white24,
+                              ),
+                            ),
+                          );
+                        },
+                        reservedSize: 24,
+                        interval:
+                            2, // Tampilkan label setiap 2 jam agar tidak penuh
                       ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: maxY > 5 ? (maxY / 4).ceilToDouble() : 1,
+                        reservedSize: 28,
+                        getTitlesWidget: (value, meta) {
+                          if (value == 0) return const SizedBox.shrink();
+                          return Text(
+                            value.toInt().toString(),
+                            style: kSubtitle.copyWith(
+                              fontSize: 10,
+                              color: Colors.white24,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                  ),
+                  borderData: FlBorderData(
+                    show: true,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.white.withOpacity(0.1),
+                        width: 1,
+                      ),
+                      left: BorderSide(
+                        color: Colors.white.withOpacity(0.1),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: sortedEntries
+                          .map(
+                            (e) => FlSpot(e.key.toDouble(), e.value.toDouble()),
+                          )
+                          .toList(),
+                      isCurved: true,
+                      gradient: LinearGradient(
+                        colors: [kPrimaryTeal, kPrimaryTeal.withOpacity(0.5)],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      barWidth: 3,
+                      isStrokeCapRound: true,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, percent, bar, index) {
+                          return FlDotCirclePainter(
+                            radius: 3,
+                            color: kPrimaryTeal,
+                            strokeWidth: 0,
+                          );
+                        },
+                      ),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          colors: [
+                            kPrimaryTeal.withOpacity(0.15),
+                            kPrimaryTeal.withOpacity(0.0),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 📋 Optimized Traffic List with Infinite Scroll
+  Widget _buildOptimizedTrafficList(List<Traffic> traffics) {
+    final displayCount = _displayedItemCount > traffics.length
+        ? traffics.length
+        : _displayedItemCount;
+
+    final hasMore = displayCount < traffics.length;
+
+    return SliverList(
+      delegate: SliverChildBuilderDelegate((context, index) {
+        // Loading indicator di akhir list
+        if (index == displayCount) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Center(
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: kPrimaryTeal,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Memuat riwayat lainnya...",
+                    style: kSubtitle.copyWith(fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        final t = traffics[index];
+        // Helper functions untuk icon dan warna (Updated)
+        final iconData = _getVehicleIcon(t.vehicleType);
+        final iconColor = _getVehicleColor(t.vehicleType);
+
+        return Card(
+          color: kSurfaceDark,
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            dense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 4,
+            ),
+            leading: CircleAvatar(
+              backgroundColor: iconColor.withOpacity(0.15),
+              child: Icon(iconData, color: iconColor, size: 20),
+            ),
+            title: Row(
+              children: [
+                Text(
+                  t.vehicleType.toUpperCase(),
+                  style: kBodyText.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: iconColor,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "•  ${t.speedKmph.toStringAsFixed(1)} km/h",
+                  style: kBodyText.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(
+                children: [
+                  Icon(Icons.location_on, size: 12, color: kTextSecondary),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      t.location,
+                      style: kSubtitle.copyWith(fontSize: 11),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(
+                    DateFormat('dd/MM HH:mm:ss').format(t.detectedAt.toLocal()),
+                    style: kSubtitle.copyWith(
+                      fontSize: 11,
+                      color: kTextSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-  // 📋 Optimized Traffic List with Infinite Scroll
-  Widget _buildOptimizedTrafficList(List<Traffic> traffics) {
-    final displayCount = _displayedItemCount > traffics.length 
-        ? traffics.length 
-        : _displayedItemCount;
-    
-    final hasMore = displayCount < traffics.length;
-
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          // Loading indicator di akhir list
-          if (index == displayCount) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Center(
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: kPrimaryTeal,
-                      ),
+            trailing: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text("Confidence", style: kSubtitle.copyWith(fontSize: 9)),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: kSuccessGreen.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    "${(t.confidence * 100).toStringAsFixed(0)}%",
+                    style: kSubtitle.copyWith(
+                      color: kSuccessGreen,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Memuat lebih banyak...",
-                      style: kSubtitle.copyWith(fontSize: 11),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          }
-
-          final t = traffics[index];
-          final iconData = _getVehicleIcon(t.vehicleType);
-          final iconColor = _getVehicleColor(t.vehicleType);
-
-          return Card(
-            color: kSurfaceDark,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            margin: const EdgeInsets.only(bottom: 8),
-            child: ListTile(
-              dense: true,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              leading: CircleAvatar(
-                backgroundColor: iconColor.withOpacity(0.2),
-                child: Icon(iconData, color: iconColor, size: 20),
-              ),
-              title: Text(
-                "${t.vehicleType.toUpperCase()} • ${t.speedKmph.toStringAsFixed(1)} km/h",
-                style: kBodyText.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
-              ),
-              subtitle: Text(
-                "${t.location} • ${DateFormat('HH:mm').format(t.detectedAt.toLocal())}",
-                style: kSubtitle.copyWith(fontSize: 11),
-              ),
-              trailing: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: kSuccessGreen.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  "${(t.confidence * 100).toStringAsFixed(0)}%",
-                  style: kSubtitle.copyWith(color: kSuccessGreen, fontSize: 11),
-                ),
-              ),
+              ],
             ),
-          );
-        },
-        childCount: hasMore ? displayCount + 1 : displayCount, // +1 untuk loading indicator
-      ),
+          ),
+        );
+      }, childCount: hasMore ? displayCount + 1 : displayCount),
     );
   }
 
+  // --- HELPER ICON & WARNA (UPDATED) ---
   IconData _getVehicleIcon(String type) {
     switch (type.toLowerCase()) {
-      case 'truck':
+      case 'truk':
         return Icons.local_shipping;
-      case 'motorcycle':
+      case 'pickup':
+        return Icons.front_loader; // Icon yang cocok untuk pickup
+      case 'motor':
         return Icons.motorcycle;
       case 'bus':
         return Icons.directions_bus;
       default:
-        return Icons.directions_car;
+        return Icons.directions_car; // Mobil & default
     }
   }
 
   Color _getVehicleColor(String type) {
     switch (type.toLowerCase()) {
-      case 'truck':
-        return Colors.orange;
-      case 'motorcycle':
+      case 'truk':
+        return Colors.redAccent;
+      case 'pickup':
+        return Colors.orangeAccent;
+      case 'motor':
         return Colors.purpleAccent;
       case 'bus':
         return Colors.greenAccent;
+      case 'mobil':
+        return Colors.lightBlueAccent;
       default:
-        return kSecondaryBlue;
+        return kTextSecondary;
     }
   }
 }

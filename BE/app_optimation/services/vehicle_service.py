@@ -49,7 +49,6 @@ def get_history(db: Session, limit: int = 100):
         .limit(limit) 
         .all()
     )
-    sd
     return [
         {
             "id": r.id,

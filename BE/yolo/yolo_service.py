@@ -1,359 +1,232 @@
 import cv2
 import threading
 import time
-from datetime import datetime
-from collections import defaultdict
-from queue import Queue
 import requests
 import os
 import random
-import numpy as np 
-
-from ultralytics import YOLO
+import yt_dlp
+import numpy as np
+from datetime import datetime
+from collections import defaultdict
+from queue import Queue
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
+from ultralytics import YOLO
 
-
-# ===== QUEUE & API MANAGER =====
-api_queue = Queue()
-
-# Queue untuk menampung frame hasil deteksi yang akan di-stream
-stream_queue = Queue(maxsize=5) 
-
-class APIManager:
-    """Mengelola pengiriman data deteksi ke API backend."""
-    def __init__(self, base_url="http://localhost:8000/api"):
-        self.base_url = base_url
-        self.headers = {"Content-Type": "application/json", "Accept": "application/json"}
-        self.session = requests.Session()
-        self.session.headers.update(self.headers)
-
-    def send_vehicle_data(self, vehicle_type, speed, timestamp, track_id=0, confidence=0):
-        try:
-            data = {
-                'vehicle_type': vehicle_type,
-                'speed': round(speed, 1),
-                'detected_at': timestamp,
-                'location': 'Bengkalis Traffic Cam',
-                'confidence': round(confidence, 2),
-                'track_id': track_id
-            }
-            response = self.session.post(
-                f"{self.base_url}/vehicle-detections",
-                json=data,
-                timeout=2
-            )
-            return response.status_code in [200, 201], response.text
-        except Exception as e:
-            return False, str(e)
-
-# ===== FASTAPI APP =====
-app = FastAPI(title="Vehicle Detection API Worker")
-
-app.running = True
-app.api_manager = APIManager(base_url="http://localhost:8000/api")
-app.log_buffer = []
-
-def append_log(msg):
-    timestamp = datetime.now().strftime("%H:%M:%S")
-    log_msg = f"[{timestamp}] {msg}"
-    app.log_buffer.append(log_msg)
-    if len(app.log_buffer) > 100:
-        app.log_buffer.pop(0)
-    print(log_msg)
-
-app.append_log = append_log
-
-# ===== YOLO MODEL & CLASSIFICATION LOGIC =====
-
-def load_yolo_model():
-    """Fungsi untuk memuat model YOLO dengan penanganan unduh otomatis."""
-    model_name = "yolov8s.pt"
-    try:
-        append_log(f"Mencoba memuat model: {model_name}")
-        model = YOLO(model_name)
-        return model
-    except RuntimeError as e:
-        append_log(f"Gagal memuat model ({model_name}). Detail Error: {str(e)}")
-        
-        try:
-            append_log(f"Mencoba mengunduh ulang model {model_name}...")
-            if os.path.exists(model_name):
-                os.remove(model_name)
-                append_log(f"File {model_name} lama dihapus.")
-
-            model = YOLO(model_name) 
-            append_log(f"Model {model_name} berhasil diunduh dan dimuat.")
-            return model
-        except Exception as retry_e:
-            append_log(f"Gagal total memuat dan mengunduh model {model_name}. Error: {str(retry_e)}")
-            raise SystemExit(1)
-
-model_yolo = load_yolo_model()
-
-vehicle_classes = {
-    'car': {'name': 'Mobil', 'min_conf': 0.25, 'min_area': 600}, 
-    'motorcycle': {'name': 'Motor', 'min_conf': 0.25, 'min_area': 250},
-    'bicycle': {'name': 'Sepeda', 'min_conf': 0.30, 'min_area': 150},
-    'bus': {'name': 'Bus', 'min_conf': 0.25, 'min_area': 1500},
-    'truck': {'name': 'Truk', 'min_conf': 0.25, 'min_area': 1000},
-    'pickup': {'name': 'Pickup', 'min_conf': 0.25, 'min_area': 700},
-}
-
-def classify_truck_or_pickup(w, h, area):
-    ar = w / h if h > 0 else 0
-    if area < 15000 or (area < 20000 and ar > 1.2):
-        return 'pickup'
-    if area >= 20000:
-        return 'truck'
-    return 'pickup'
-
-def estimate_speed_simple(area, y_pos, frame_h):
-    perspective_factor = (frame_h - y_pos) / frame_h
-    if area > 20000: base_speed = 25
-    elif area > 10000: base_speed = 35
-    elif area > 5000: base_speed = 45
-    else: base_speed = 55
-    variation = random.uniform(-5, 5)
-    speed = base_speed * (1 + perspective_factor * 0.3) + variation
-    return max(15, min(80, speed))
-
-# ===== DETECTION THREAD =====
-def run_detection(rtsp_url: str):
-    cap = cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
-    if not cap.isOpened():
-        append_log(f"Gagal membuka RTSP: {rtsp_url}")
-        return
-
-    track_frame_count = defaultdict(int)
-    counted_ids = set()
-    last_speed = {}
+# ==========================================
+# 1. CONFIGURATION
+# ==========================================
+class Config:
+    MODEL_NAME = "yolov8s.pt"
     
-    append_log("Deteksi RTSP dimulai...")
-
-    while app.running:
-        ret, frame = cap.read()
-        if not ret:
-            append_log("Frame gagal dibaca, mencoba ulang...")
-            time.sleep(0.5)
-            continue
-        
-        h, w = frame.shape[:2]
-        target_h_inf = 480
-        target_w_inf = int(w * target_h_inf / h)
-        frame_inf = cv2.resize(frame, (target_w_inf, target_h_inf))
-        
-        results = model_yolo.track(
-            frame_inf,
-            persist=True,
-            conf=0.25,
-            iou=0.4,
-            tracker="bytetrack.yaml",
-            verbose=False,
-            device='cpu',
-            half=False
-        )[0]
-
-        current_ids = set()
-        if results.boxes is not None:
-            for box in results.boxes:
-                track_id = int(box.id[0]) if box.id is not None else None
-                if track_id is None:
-                    continue
-                cls_id = int(box.cls[0])
-                conf = float(box.conf[0])
-                class_name = model_yolo.names[cls_id]
-
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-                # Scale kembali ke ukuran frame asli
-                x1 = int(x1 * w / target_w_inf)
-                y1 = int(y1 * h / target_h_inf)
-                x2 = int(x2 * w / target_w_inf)
-                y2 = int(y2 * h / target_h_inf)
-                bw, bh = x2 - x1, y2 - y1
-                area = bw * bh
-
-                # Klasifikasi truck vs pickup
-                if class_name == 'truck':
-                    class_name = classify_truck_or_pickup(bw, bh, area)
-                if class_name not in vehicle_classes:
-                    continue
-                if area < vehicle_classes[class_name]['min_area'] or conf < vehicle_classes[class_name]['min_conf']:
-                    continue
-
-                current_ids.add(track_id)
-                track_frame_count[track_id] += 1
-                
-                # Hitung kecepatan setiap frame
-                y_center_current = (y1 + y2) // 2
-                current_speed = estimate_speed_simple(area, y_center_current, h)
-                last_speed[track_id] = current_speed
-                
-                # Gambar anotasi
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                label = f"{vehicle_classes[class_name]['name']} {current_speed:.1f} km/h (ID:{track_id})"
-                cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-                
-                # Logika pengiriman data ke API
-                if track_id not in counted_ids and track_frame_count[track_id] >= 3:
-                    counted_ids.add(track_id)
-                    timestamp = datetime.now().isoformat()
-
-                    data = {
-                        "vehicle_type": vehicle_classes[class_name]['name'],
-                        "speed": current_speed,
-                        "timestamp": timestamp,
-                        "track_id": track_id,
-                        "confidence": conf
-                    }
-                    api_queue.put(data)
-
-                    append_log(f"Deteksi: {data['vehicle_type']} | {current_speed:.1f} km/h | ID: {track_id}")
-
-        # Cleanup tracker yang hilang
-        for tid in list(track_frame_count.keys()):
-            if tid not in current_ids and tid not in counted_ids:
-                if track_frame_count[tid] < 3:
-                    del track_frame_count[tid]
-        
-        # Masukkan Frame ke Stream Queue (untuk MJPEG)
-        try:
-            # Mengubah frame menjadi byte JPEG (kualitas 70)
-            ret, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 70]) 
-            if ret:
-                # Bersihkan queue jika penuh
-                if stream_queue.full():
-                    stream_queue.get_nowait()
-                stream_queue.put(jpeg.tobytes())
-        except Exception as e:
-            append_log(f"Stream Queue Error: {str(e)}")
-
-        time.sleep(0.01)
-
-    cap.release()
-    append_log("Deteksi RTSP dihentikan.")
-
-# ===== API WORKER =====
-def api_worker():
-    """Worker thread untuk kirim data ke API - batch processing"""
-    batch = []
-    batch_size = 10
-    last_send_time = time.time()
+    # Sumber Video (YouTube / RTSP / File)
+    VIDEO_SOURCE = "https://youtu.be/r537Vt_U3_0" 
     
-    append_log("API Worker dimulai...")
-
-    while app.running or not api_queue.empty():
-        try:
-            # Ambil data dari queue
-            try:
-                data = api_queue.get(timeout=0.5)
-                batch.append(data)
-                api_queue.task_done()
-            except:
-                pass
-            
-            current_time = time.time()
-            should_send = (
-                len(batch) >= batch_size or 
-                (len(batch) > 0 and current_time - last_send_time > 2)
-            )
-            
-            if should_send and batch:
-                success_count = 0
-                failed_data = []
-
-                for data in batch:
-                    try:
-                        success, resp = app.api_manager.send_vehicle_data(
-                            data["vehicle_type"], data["speed"], data["timestamp"],
-                            data["track_id"], data["confidence"]
-                        )
-                        if success:
-                            success_count += 1
-                        else:
-                            failed_data.append(data)
-                            append_log(f"API Gagal: {resp}")
-                    except Exception as e:
-                        failed_data.append(data)
-                        append_log(f"API Error: {str(e)}")
-
-                if success_count > 0:
-                    append_log(f"API: {success_count}/{len(batch)} data terkirim")
-
-                batch = failed_data
-                last_send_time = current_time
-                time.sleep(0.1)
-                
-        except Exception as e:
-            append_log(f"API Worker Error: {str(e)}")
-            time.sleep(1)
-
-    # Kirim sisa data saat shutdown
-    if batch:
-        append_log(f"Mengirim {len(batch)} data tersisa saat shutdown...")
-        for data in batch:
-            try:
-                app.api_manager.send_vehicle_data(
-                    data["vehicle_type"], data["speed"], data["timestamp"],
-                    data["track_id"], data["confidence"]
-                )
-            except:
-                pass
-
-    append_log("API Worker dihentikan.")
-
-# ===== START DETECTION & WORKER =====
-def start_background_tasks():
-    RTSP_URL = "rtsp://admin:Bengkalis12@192.168.1.64:554/stream1"
+    # Url API
+    API_BASE_URL = "http://127.0.0.1:8000/api" 
     
-    threading.Thread(target=run_detection, args=(RTSP_URL,), daemon=True).start()
-    threading.Thread(target=api_worker, daemon=True).start()
-
-# ===== FASTAPI LIFECYCLE & ENDPOINTS =====
-@app.on_event("startup")
-def startup_event():
-    start_background_tasks()
-    append_log("Aplikasi deteksi kendaraan dimulai.")
-
-@app.on_event("shutdown")
-def shutdown_event():
-    app.running = False
-    append_log("Menghentikan semua thread...")
-    time.sleep(3)
-
-# Endpoint untuk cek status
-@app.get("/status")
-def get_status():
-    return {
-        "status": "running",
-        "queue_size": api_queue.qsize(),
-        "log": app.log_buffer[-20:]
+    TARGET_HEIGHT = 480
+    
+    # Konfigurasi per kendaraan 
+    VEHICLE_CLASSES = {
+        'car': {'name': 'Mobil', 'min_conf': 0.40, 'min_area': 800, 'color': (255, 100, 0)},
+        'motorcycle': {'name': 'Motor', 'min_conf': 0.35, 'min_area': 300, 'color': (0, 255, 255)},
+        'bus': {'name': 'Bus', 'min_conf': 0.45, 'min_area': 2500, 'color': (0, 0, 255)},
+        'truck': {'name': 'Truk', 'min_conf': 0.45, 'min_area': 1800, 'color': (0, 0, 150)},
+        'pickup': {'name': 'Pickup', 'min_conf': 0.40, 'min_area': 1000, 'color': (0, 165, 255)},
     }
 
-@app.get("/")
-def root():
-    return {"message": "Vehicle Detection Worker API - Running in background"}
+# ==========================================
+# 2. UTILITY & LOGIC CLASSES
+# ==========================================
+class VideoSourceManager:
+    @staticmethod
+    def get_url(source):
+        if "youtube.com" in source or "youtu.be" in source:
+            ydl_opts = {'format': 'best[ext=mp4]/best', 'quiet': True, 'no_warnings': True}
+            try:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info = ydl.extract_info(source, download=False)
+                    return info['url']
+            except Exception as e:
+                print(f"YouTube Error: {e}")
+                return None
+        return source
 
-# ===== ENDPOINT VIDEO FEED MJPEG =====
-def frame_generator():
-    """Generator yang menghasilkan frame JPEG dari stream_queue."""
-    while True:
+class VehicleDetector:
+    def __init__(self, model_path):
+        self.model = YOLO(model_path)
+        self.track_history = defaultdict(int)
+        self.counted_ids = set()
+
+    def classify_type(self, label, w, h):
+        area = w * h
+        aspect_ratio = w / h if h > 0 else 0
+        
+        if label == 'truck':
+            if area < 25000: 
+                return 'pickup'
+            return 'truck'
+        
+        if label == 'car':
+            if aspect_ratio > 1.8 and area > 15000:
+                return 'pickup'
+            return 'car'
+            
+        return label
+
+    def estimate_speed(self, area, y_pos, frame_h):
+        perspective = (frame_h - y_pos) / frame_h
+        base = 30 if area > 20000 else 45
+        speed = base * (1 + perspective * 0.4) + random.uniform(-3, 3)
+        return max(10, min(100, speed))
+
+# ==========================================
+# 3. FASTAPI SETUP
+# ==========================================
+app = FastAPI(title="Bengkalis Traffic Intelligence")
+api_queue = Queue()
+stream_queue = Queue(maxsize=10)
+running_flag = {"is_active": True}
+
+class APIManager:
+    def __init__(self, base_url):
+        self.session = requests.Session()
+        self.url = f"{base_url}/vehicle-detections"
+
+    def send(self, data):
         try:
-            # Ambil frame dari queue
-            frame_bytes = stream_queue.get(timeout=0.5) 
-            yield (
-                b'--frame\r\n'
-                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n'
-            )
-        except Exception:
-            # Lanjut ke loop berikutnya jika queue kosong
-            continue
+            res = self.session.post(self.url, json=data, timeout=3)
+            if res.status_code == 422:
+                print(f"Validation Error (422): {res.json()}")
+            return res.status_code in [200, 201]
+        except Exception as e:
+            print(f"API Error: {e}")
+            return False
+
+api_manager = APIManager(Config.API_BASE_URL)
+
+def draw_styled_bbox(img, x1, y1, x2, y2, label, conf, speed, color):
+    """Menggambar Bounding Box yang rapi dengan label background."""
+    # Main BBox
+    cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+    
+    # Label Text
+    text = f"{label} {speed:.1f} km/h"
+    font = cv2.FONT_HERSHEY_DUPLEX
+    font_scale = 0.6
+    thickness = 1
+    
+    (tw, th), baseline = cv2.getTextSize(text, font, font_scale, thickness)
+    
+    # Draw Background Box for Text
+    cv2.rectangle(img, (x1, y1 - th - 10), (x1 + tw + 10, y1), color, -1)
+    
+    # Draw Text
+    cv2.putText(img, text, (x1 + 5, y1 - 7), font, font_scale, (255, 255, 255), thickness)
+
+# ==========================================
+# 4. BACKGROUND LOOPS
+# ==========================================
+def detection_loop():
+    while running_flag["is_active"]:
+        source_url = VideoSourceManager.get_url(Config.VIDEO_SOURCE)
+        if not source_url:
+            time.sleep(5); continue
+
+        cap = cv2.VideoCapture(source_url)
+        detector = VehicleDetector(Config.MODEL_NAME)
+
+        while running_flag["is_active"]:
+            ret, frame = cap.read()
+            if not ret: break
+
+            h, w = frame.shape[:2]
+            frame_resized = cv2.resize(frame, (int(w * Config.TARGET_HEIGHT / h), Config.TARGET_HEIGHT))
+            
+            # Run YOLO
+            results = detector.model.track(frame_resized, persist=True, conf=0.3, verbose=False)[0]
+
+            if results.boxes is not None:
+                for box in results.boxes:
+                    if box.id is None: continue
+                    
+                    tid = int(box.id[0])
+                    cls_name = detector.model.names[int(box.cls[0])]
+                    conf = float(box.conf[0])
+                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+                    
+                    # Klasifikasi Ulang (Pickup vs Truk)
+                    v_type = detector.classify_type(cls_name, x2-x1, y2-y1)
+                    
+                    if v_type not in Config.VEHICLE_CLASSES: continue
+                    cfg = Config.VEHICLE_CLASSES[v_type]
+
+                    # Filter noise
+                    if conf < cfg['min_conf']: continue
+
+                    # Scaling Koordinat ke Frame Asli
+                    scale_x, scale_y = w / frame_resized.shape[1], h / frame_resized.shape[0]
+                    orig_x1, orig_y1 = int(x1 * scale_x), int(y1 * scale_y)
+                    orig_x2, orig_y2 = int(x2 * scale_x), int(y2 * scale_y)
+
+                    speed = detector.estimate_speed((x2-x1)*(y2-y1), (y1+y2)//2, Config.TARGET_HEIGHT)
+
+                    # Tampilkan BBox di Stream
+                    draw_styled_bbox(frame, orig_x1, orig_y1, orig_x2, orig_y2, 
+                                     cfg['name'], conf, speed, cfg['color'])
+
+                    # Counter & Kirim API
+                    detector.track_history[tid] += 1
+                    if tid not in detector.counted_ids and detector.track_history[tid] >= 4:
+                        detector.counted_ids.add(tid)
+                        api_queue.put({
+                            "vehicle_type": cfg['name'],
+                            "speed_kmph": round(speed, 1),
+                            "confidence": round(conf, 2),
+                            "track_id": tid,
+                            "detected_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            "location": "Bengkalis Main Road"
+                        })
+
+            # MJPEG Stream
+            _, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 70])
+            if stream_queue.full(): stream_queue.get()
+            stream_queue.put(jpeg.tobytes())
+
+        cap.release()
+        time.sleep(2)
+
+def api_worker_loop():
+    while running_flag["is_active"]:
+        if not api_queue.empty():
+            data = api_queue.get()
+            api_manager.send(data)
+            api_queue.task_done()
+        time.sleep(0.1)
+
+# ==========================================
+# 5. ROUTES
+# ==========================================
+@app.on_event("startup")
+def startup():
+    threading.Thread(target=detection_loop, daemon=True).start()
+    threading.Thread(target=api_worker_loop, daemon=True).start()
 
 @app.get("/video_feed")
 def video_feed():
-    """Endpoint untuk menyajikan video feed MJPEG."""
-    # Menghasilkan response streaming dengan Content-Type khusus MJPEG
-    return StreamingResponse(
-        frame_generator(), 
-        media_type="multipart/x-mixed-replace; boundary=frame"
-    )
+    def gen():
+        while True:
+            if not stream_queue.empty():
+                yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + stream_queue.get() + b'\r\n')
+            else:
+                time.sleep(0.01)
+    return StreamingResponse(gen(), media_type="multipart/x-mixed-replace; boundary=frame")
+
+@app.get("/")
+def index():
+    return {"status": "running", "counted": len(api_queue.queue)}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)

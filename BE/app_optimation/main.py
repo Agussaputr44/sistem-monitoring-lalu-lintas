@@ -4,11 +4,18 @@ from app_optimation.core.config import settings
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 import redis.asyncio as aioredis
+from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Traffic Monitoring API")
-
+app.add_middleware(
+    CORSMiddleware,
+   allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.on_event("startup")
 async def startup_event():
     redis = aioredis.from_url(

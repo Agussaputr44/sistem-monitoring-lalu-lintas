@@ -9,7 +9,7 @@ abstract class TrafficRemoteDataSource {
 
 class TrafficRemoteDataSourceImpl implements TrafficRemoteDataSource {
   final http.Client client;
-  static const BASE_URL = 'https://fancy-quick-lacewing.ngrok-free.app';
+  static const BASE_URL = 'https://4c6b315fae0d.ngrok-free.app';
 
   TrafficRemoteDataSourceImpl({required this.client});
 
