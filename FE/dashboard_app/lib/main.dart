@@ -1,4 +1,4 @@
-import 'package:dashboard_app/presentation/pages/splash_screen.dart';
+import 'presentation/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'injection.dart' as di;

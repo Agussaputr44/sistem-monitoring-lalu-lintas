@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:dashboard_app/data/models/traffic_model.dart';
+import '../models/traffic_model.dart';
 import 'package:http/http.dart' as http;
 
 abstract class TrafficRemoteDataSource {
@@ -9,7 +9,7 @@ abstract class TrafficRemoteDataSource {
 
 class TrafficRemoteDataSourceImpl implements TrafficRemoteDataSource {
   final http.Client client;
-  static const BASE_URL = 'https://4c6b315fae0d.ngrok-free.app';
+  static const BASE_URL = 'https://8e15236149aa.ngrok-free.app';
 
   TrafficRemoteDataSourceImpl({required this.client});
 

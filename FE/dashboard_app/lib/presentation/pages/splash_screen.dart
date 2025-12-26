@@ -1,10 +1,10 @@
-import 'package:dashboard_app/common/constants.dart';
-import 'package:dashboard_app/presentation/pages/traffic_history_page.dart';
+import '../../common/constants.dart';
+import 'traffic_history_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();

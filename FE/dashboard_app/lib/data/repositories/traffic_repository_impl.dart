@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import 'package:dashboard_app/common/exception.dart';
-import 'package:dashboard_app/common/failure.dart';
-import 'package:dashboard_app/data/datasources/traffic_remote_datasources.dart';
-import 'package:dashboard_app/domain/entities/traffic.dart';
-import 'package:dashboard_app/domain/repositories/traffic_repository.dart';
+import '../../common/exception.dart';
+import '../../common/failure.dart';
+import '../datasources/traffic_remote_datasources.dart';
+import '../../domain/entities/traffic.dart';
+import '../../domain/repositories/traffic_repository.dart';
 
 class TrafficRepositoryImpl implements TrafficRepository {
   final TrafficRemoteDataSource remoteDataSource;

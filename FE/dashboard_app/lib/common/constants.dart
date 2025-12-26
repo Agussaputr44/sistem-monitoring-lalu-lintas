@@ -52,7 +52,6 @@ const kColorScheme = ColorScheme(
   primary: kPrimaryTeal,
   secondary: kSecondaryBlue,
   surface: kSurfaceDark,
-  background: kBackgroundDark,
   error: kDangerRed,
   onPrimary: Colors.white,
   onSecondary: Colors.white,

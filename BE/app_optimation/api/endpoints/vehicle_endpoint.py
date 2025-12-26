@@ -1,8 +1,12 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from app_optimation.database.session import SessionLocal
 from app_optimation.services import vehicle_service
 from pydantic import BaseModel
+from fastapi.responses import StreamingResponse
+
+# HAPUS: from app_optimation.main import video_service_instance 
+# Baris di atas adalah penyebab error Circular Import
 
 router = APIRouter(prefix="/api", tags=["Traffic Monitoring"])
 
@@ -22,15 +26,20 @@ class VehicleIn(BaseModel):
     track_id: int = 0
     location: str = "Camera Bengkalis"
 
+@router.get("/video_feed")
+async def video_feed(request: Request):
+    video_service = request.app.state.video_service
+    
+    return StreamingResponse(
+        video_service.generate_frames(),
+        media_type='multipart/x-mixed-replace; boundary=frame'
+    )
+
 # ===============================
 # === Endpoint untuk YOLO save ===
 # ===============================
 @router.post("/vehicle-detections")
 async def create_vehicle(data: VehicleIn, db: Session = Depends(get_db)):
-    """
-    Menyimpan hasil deteksi kendaraan dari YOLO ke database
-    dan otomatis menghapus cache Redis agar data baru langsung tampil.
-    """
     return vehicle_service.save_detection(
         db=db,
         vehicle_type=data.vehicle_type,

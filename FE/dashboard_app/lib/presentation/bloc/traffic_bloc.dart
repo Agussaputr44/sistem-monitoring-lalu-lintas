@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:dashboard_app/domain/usecases/get_traffic_history.dart';
+import '../../domain/usecases/get_traffic_history.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/traffic.dart';

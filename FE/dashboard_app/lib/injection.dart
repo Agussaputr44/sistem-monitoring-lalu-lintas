@@ -1,8 +1,8 @@
-import 'package:dashboard_app/data/datasources/traffic_remote_datasources.dart';
-import 'package:dashboard_app/data/repositories/traffic_repository_impl.dart';
-import 'package:dashboard_app/domain/repositories/traffic_repository.dart';
-import 'package:dashboard_app/domain/usecases/get_traffic_history.dart';
-import 'package:dashboard_app/presentation/bloc/traffic_bloc.dart';
+import 'data/datasources/traffic_remote_datasources.dart';
+import 'data/repositories/traffic_repository_impl.dart';
+import 'domain/repositories/traffic_repository.dart';
+import 'domain/usecases/get_traffic_history.dart';
+import 'presentation/bloc/traffic_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 
