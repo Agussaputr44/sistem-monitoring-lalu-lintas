@@ -14,24 +14,22 @@ from app_optimation.services import vehicle_service
 class VideoStreamService:
     def __init__(self):
         self.model_path = "app_optimation/core/yolov8s.pt" 
-        self.video_source = "https://youtu.be/r537Vt_U3_0"
+        self.video_source = "https://youtu.be/rncXQvezcZU"
         self.target_height = 480
         self.stream_queue = queue.Queue(maxsize=2)
         self.running = True
         self.model = None
         self.cap = None
         
-        # Flag untuk status
         self.stream_ready = False
         self.frame_count = 0
         
-        # Konfigurasi Kendaraan dengan warna yang lebih mencolok
         self.vehicle_classes = {
-            'car': {'name': 'Mobil', 'min_conf': 0.40, 'color': (0, 255, 0)},      # HIJAU terang
-            'motorcycle': {'name': 'Motor', 'min_conf': 0.35, 'color': (0, 255, 255)}, # CYAN
-            'bus': {'name': 'Bus', 'min_conf': 0.45, 'color': (255, 0, 0)},        # BIRU
-            'truck': {'name': 'Truk', 'min_conf': 0.45, 'color': (0, 0, 255)},     # MERAH
-            'pickup': {'name': 'Pickup', 'min_conf': 0.40, 'color': (255, 0, 255)}, # MAGENTA
+            'car': {'name': 'car', 'min_conf': 0.40, 'color': (0, 255, 0)},     
+            'motorcycle': {'name': 'motorcycle', 'min_conf': 0.35, 'color': (0, 255, 255)}, 
+            'bus': {'name': 'bus', 'min_conf': 0.45, 'color': (255, 0, 0)},        
+            'truck': {'name': 'truck', 'min_conf': 0.45, 'color': (0, 0, 255)},    
+            'pickup': {'name': 'pickup', 'min_conf': 0.40, 'color': (255, 0, 255)}, 
         }
 
     def _get_youtube_url(self, source):
@@ -51,40 +49,31 @@ class VideoStreamService:
         return source
 
     def _draw_bbox(self, img, x1, y1, x2, y2, label, speed, color):
-        """Gambar bounding box dengan style yang lebih jelas"""
-        # Bounding box dengan ketebalan lebih tebal
         cv2.rectangle(img, (x1, y1), (x2, y2), color, 3)
         
-        # Background untuk text agar lebih mudah dibaca
         text = f"{label} {speed:.1f} km/h"
         font = cv2.FONT_HERSHEY_SIMPLEX
         font_scale = 0.6
         thickness = 2
         
-        # Hitung ukuran text
         (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, thickness)
         
-        # Gambar background rectangle untuk text
         cv2.rectangle(img, 
                      (x1, y1 - text_height - 10), 
                      (x1 + text_width + 10, y1), 
                      color, 
-                     -1)  # Filled rectangle
+                     -1)  
         
-        # Gambar text dengan warna putih
         cv2.putText(img, text, (x1 + 5, y1 - 5), 
                    font, font_scale, (255, 255, 255), thickness)
         
-        # Tambah circle di center bounding box
         center_x = (x1 + x2) // 2
         center_y = (y1 + y2) // 2
         cv2.circle(img, (center_x, center_y), 5, color, -1)
 
     def run_detection(self):
-        """Loop utama deteksi YOLO"""
         print("Starting YOLO detection thread...")
         
-        # Load model sekali di awal
         try:
             print("📦 Loading YOLO model...")
             self.model = YOLO(self.model_path)
@@ -115,7 +104,6 @@ class VideoStreamService:
                 self.stream_ready = True
                 retry_count = 0
                 
-                # PENTING: Tidak skip frame agar semua deteksi terlihat
                 frame_counter = 0
                 detection_count = 0
 
@@ -127,16 +115,13 @@ class VideoStreamService:
 
                     frame_counter += 1
                     
-                    # Resize frame
                     h, w = frame.shape[:2]
                     frame_resized = cv2.resize(frame, (int(w * self.target_height / h), self.target_height))
                     
-                    # SELALU RUN DETECTION (tidak skip frame)
                     try:
                         results = self.model.track(frame_resized, persist=True, conf=0.3, verbose=False)[0]
                     except Exception as e:
                         print(f"⚠️ Detection error: {e}")
-                        # Kirim frame tanpa deteksi
                         _, jpeg = cv2.imencode('.jpg', frame_resized, [cv2.IMWRITE_JPEG_QUALITY, 85])
                         try:
                             if self.stream_queue.full():
@@ -146,7 +131,6 @@ class VideoStreamService:
                             pass
                         continue
 
-                    # Process detections
                     detected_in_frame = 0
                     if results.boxes is not None and len(results.boxes) > 0:
                         for box in results.boxes:
@@ -165,19 +149,15 @@ class VideoStreamService:
 
                                 detected_in_frame += 1
                                 
-                                # Estimasi Speed
                                 speed = 40 + random.uniform(-5, 5)
 
-                                # GAMBAR BOUNDING BOX - INI YANG PENTING!
                                 self._draw_bbox(frame_resized, x1, y1, x2, y2, 
                                               cfg['name'], speed, cfg['color'])
 
-                                # Simpan ke Database
                                 track_history[tid] += 1
                                 if tid not in counted_ids and track_history[tid] >= 5:
                                     counted_ids.add(tid)
                                     
-                                    # Background save
                                     threading.Thread(
                                         target=self._save_to_db,
                                         args=(cfg['name'], speed, conf, tid),
@@ -189,16 +169,13 @@ class VideoStreamService:
                         if detection_count % 10 == 0:
                             print(f"📊 Detected {detected_in_frame} vehicles in frame (total detections: {detection_count})")
 
-                    # Tambahkan info di frame
                     info_text = f"Detections: {detected_in_frame} | Frame: {frame_counter}"
                     cv2.putText(frame_resized, info_text, (10, 30), 
                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
-                    # Encode dan kirim frame dengan QUALITY LEBIH TINGGI
                     _, jpeg = cv2.imencode('.jpg', frame_resized, 
-                                          [cv2.IMWRITE_JPEG_QUALITY, 85])  # Quality 85 (dari 80)
+                                          [cv2.IMWRITE_JPEG_QUALITY, 85])  
                     
-                    # Non-blocking queue put
                     try:
                         if self.stream_queue.full():
                             self.stream_queue.get_nowait()
@@ -207,7 +184,6 @@ class VideoStreamService:
                     except queue.Full:
                         pass
 
-                # Release capture if loop breaks
                 if self.cap:
                     self.cap.release()
                     self.cap = None
@@ -227,7 +203,6 @@ class VideoStreamService:
         self.stream_ready = False
 
     def _save_to_db(self, vehicle_type, speed, conf, tid):
-        """Save detection to database"""
         db = SessionLocal()
         try:
             vehicle_service.save_detection(
@@ -245,10 +220,8 @@ class VideoStreamService:
             db.close()
 
     def generate_frames(self):
-        """Generator untuk StreamingResponse"""
         print("🎬 Stream client connected")
         
-        # Tunggu stream ready
         wait_time = 0
         while not self.stream_ready and wait_time < 10:
             time.sleep(0.5)
@@ -267,7 +240,6 @@ class VideoStreamService:
                        b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
                 time.sleep(0.2)
         
-        # Stream frames
         frames_sent = 0
         while self.running:
             try:
@@ -292,7 +264,6 @@ class VideoStreamService:
         print("🛑 Stream client disconnected")
 
     def stop(self):
-        """Stop streaming"""
         print("🛑 Stopping video service...")
         self.running = False
         if self.cap:
