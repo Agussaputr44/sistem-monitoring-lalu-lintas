@@ -18,10 +18,20 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="Traffic Monitoring API",
     servers=[
-        {"url": "http://76.13.18.72", "description": "VPS Server (Nginx)"},
+        {"url": "http://76.13.18.72:8000", "description": "VPS Server"},
         {"url": "http://127.0.0.1:8000", "description": "Localhost (Direct)"}
     ]
 )
+
+# 3. TAMBAHKAN CORS MIDDLEWARE - INI YANG KURANG!!!
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # 4. Inisialisasi Service Video
 video_service = VideoStreamService()
 app.state.video_service = video_service
