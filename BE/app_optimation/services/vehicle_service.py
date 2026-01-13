@@ -42,23 +42,57 @@ def get_all_classification(db: Session):
     return [{"vehicle_type": r.vehicle_type, "count": r.count} for r in result]
 
 @cache(expire=10) 
+
 def get_history(db: Session, limit: int = 100):
-    result = (
-        db.query(VehicleDetection)
+
+    results = (
+
+        db.query(
+
+            VehicleDetection.id,
+
+            VehicleDetection.vehicle_type,
+
+            VehicleDetection.speed_kmph,
+
+            VehicleDetection.confidence,
+
+            VehicleDetection.location,
+
+            VehicleDetection.detected_at
+
+        )
+
         .order_by(VehicleDetection.detected_at.desc())
+
         .limit(limit) 
+
         .all()
+
     )
+
+    
+
     return [
+
         {
+
             "id": r.id,
+
             "vehicle_type": r.vehicle_type,
+
             "speed_kmph": r.speed_kmph,
+
             "confidence": r.confidence,
+
             "location": r.location,
+
             "detected_at": r.detected_at.isoformat() if r.detected_at else None
+
         }
-        for r in result
+
+        for r in results
+
     ]
 
 @cache(expire=60)
@@ -84,3 +118,4 @@ def get_average_speed(db: Session):
         "average_speed": round(result, 2) if result else 0.0,
         "unit": "km/h"
     }
+

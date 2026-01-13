@@ -35,16 +35,27 @@ class VideoStreamService:
     def _get_youtube_url(self, source):
         if "youtube.com" in source or "youtu.be" in source:
             try:
+                # MODIFIKASI: Tambahkan cookies dan headers untuk bypass bot detection
                 ydl_opts = {
                     'format': 'best[height<=480]/best',
                     'quiet': True,
-                    'no_warnings': True
+                    'no_warnings': True,
+                    'cookiefile': '/app/app_optimation/cookies.txt',  # TAMBAHAN: Pakai cookies
+                    'http_headers': {  # TAMBAHAN: Tambahkan headers
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'Accept-Language': 'en-us,en;q=0.5',
+                        'Accept-Encoding': 'gzip, deflate',
+                        'Connection': 'keep-alive',
+                    }
                 }
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     info = ydl.extract_info(source, download=False)
                     url = info['url']
+                    print(f"✅ Successfully got YouTube URL with cookies")  # TAMBAHAN: Log sukses
                     return url
             except Exception as e:
+                print(f"❌ Failed to get YouTube URL: {e}")  # TAMBAHAN: Log error
                 return source
         return source
 

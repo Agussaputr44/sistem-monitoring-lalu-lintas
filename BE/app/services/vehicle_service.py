@@ -56,11 +56,18 @@ def get_all_classification(db):
 # === AMBIL HISTORY DETEKSI ==================================
 # ============================================================
 
-def get_history(db):
+from sqlalchemy import desc
+
+def get_history(db, limit_data: int = 100000):
     """
-    Ambil semua riwayat deteksi kendaraan
+    Ambil riwayat deteksi kendaraan dengan batasan jumlah data (default 100k)
     """
-    result = db.query(VehicleDetection).order_by(VehicleDetection.detected_at.desc()).all()
+    # Menambahkan .limit() di akhir query
+    result = db.query(VehicleDetection)\
+        .order_by(VehicleDetection.detected_at.desc())\
+        .limit(limit_data)\
+        .all() 
+
     return [
         {
             "id": r.id,
@@ -73,7 +80,6 @@ def get_history(db):
         }
         for r in result
     ]
-
 
 def get_history_by_id(db, history_id: int):
     """
