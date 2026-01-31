@@ -133,7 +133,7 @@ $(document).ready(function() {
         widgets: ['zebra']
     });
 
-    var data = {"OkPercent": 100.0, "KoPercent": 0.0};
+    var data = {"OkPercent": 51.851851851851855, "KoPercent": 48.148148148148145};
     var dataset = [
         {
             "label" : "FAIL",
@@ -173,7 +173,7 @@ $(document).ready(function() {
     });
 
     // Creates APDEX table
-    createTable($("#apdexTable"), {"supportsControllersDiscrimination": true, "overall": {"data": [1.0, 500, 1500, "Total"], "isController": false}, "titles": ["Apdex", "T (Toleration threshold)", "F (Frustration threshold)", "Label"], "items": [{"data": [1.0, 500, 1500, "GET - Traffic Classification"], "isController": false}, {"data": [1.0, 500, 1500, "GET - Traffic History"], "isController": false}, {"data": [1.0, 500, 1500, "GET - Traffic History by ID"], "isController": false}, {"data": [1.0, 500, 1500, "GET - Average Speed"], "isController": false}]}, function(index, item){
+    createTable($("#apdexTable"), {"supportsControllersDiscrimination": true, "overall": {"data": [0.006172839506172839, 500, 1500, "Total"], "isController": false}, "titles": ["Apdex", "T (Toleration threshold)", "F (Frustration threshold)", "Label"], "items": [{"data": [0.015873015873015872, 500, 1500, "GET - Traffic Classification"], "isController": false}, {"data": [0.0, 500, 1500, "GET - Traffic History"], "isController": false}, {"data": [0.0, 500, 1500, "GET - Traffic History by ID"], "isController": false}, {"data": [0.0, 500, 1500, "GET - Average Speed"], "isController": false}]}, function(index, item){
         switch(index){
             case 0:
                 item = item.toFixed(3);
@@ -187,7 +187,7 @@ $(document).ready(function() {
     }, [[0, 0]], 3);
 
     // Create statistics table
-    createTable($("#statisticsTable"), {"supportsControllersDiscrimination": true, "overall": {"data": ["Total", 2400, 0, 0.0, 20.22791666666667, 3, 106, 16.0, 39.0, 47.0, 67.98999999999978, 50.45726900031536, 171.63601781772311, 8.068728319142227], "isController": false}, "titles": ["Label", "#Samples", "FAIL", "Error %", "Average", "Min", "Max", "Median", "90th pct", "95th pct", "99th pct", "Transactions/s", "Received", "Sent"], "items": [{"data": ["GET - Traffic Classification", 600, 0, 0.0, 20.845000000000027, 4, 59, 20.0, 39.0, 43.0, 48.99000000000001, 12.631047113805735, 4.181567355058734, 2.0846161740558293], "isController": false}, {"data": ["GET - Traffic History", 600, 0, 0.0, 31.050000000000033, 8, 106, 30.0, 55.89999999999998, 64.0, 83.96000000000004, 12.62812282954139, 163.59831782880477, 1.99780849451729], "isController": false}, {"data": ["GET - Traffic History by ID", 600, 0, 0.0, 13.665000000000004, 3, 60, 11.0, 23.0, 29.0, 45.97000000000003, 12.631844880944861, 1.8133605444325143, 2.0230689067138257], "isController": false}, {"data": ["GET - Average Speed", 600, 0, 0.0, 15.351666666666667, 4, 71, 13.0, 28.0, 32.0, 44.98000000000002, 12.631313024988948, 2.2326832592998045, 1.9736426601545232], "isController": false}]}, function(index, item){
+    createTable($("#statisticsTable"), {"supportsControllersDiscrimination": true, "overall": {"data": ["Total", 324, 156, 48.148148148148145, 33425.7839506173, 2, 175045, 9980.5, 70968.0, 159024.0, 174697.0, 1.24154104366086, 1779.081644016845, 0.16114257939731613], "isController": false}, "titles": ["Label", "#Samples", "FAIL", "Error %", "Average", "Min", "Max", "Median", "90th pct", "95th pct", "99th pct", "Transactions/s", "Received", "Sent"], "items": [{"data": ["GET - Traffic Classification", 126, 26, 20.634920634920636, 15969.952380952383, 866, 67350, 6896.0, 40746.29999999999, 65035.94999999998, 67350.0, 0.4828215169792234, 0.1336605510871148, 0.08062742129242889], "isController": false}, {"data": ["GET - Traffic History", 66, 34, 51.515151515151516, 94921.0303030303, 27554, 175045, 68091.0, 170544.1, 174697.0, 175045.0, 0.2743746544334371, 1929.2003047351454, 0.04394281574910516], "isController": false}, {"data": ["GET - Traffic History by ID", 66, 66, 100.0, 2.9696969696969693, 2, 9, 2.0, 4.0, 8.0, 9.0, 0.3435782108945527, 0.8827678445933284, 0.0], "isController": false}, {"data": ["GET - Average Speed", 66, 30, 45.45454545454545, 38678.1212121212, 5236, 72089, 40641.0, 69643.5, 69847.0, 72089.0, 0.3315283456735551, 0.060366178708847786, 0.05244882031163665], "isController": false}]}, function(index, item){
         switch(index){
             // Errors pct
             case 3:
@@ -217,7 +217,7 @@ $(document).ready(function() {
     }, [[0, 0]], 0, summaryTableHeader);
 
     // Create error table
-    createTable($("#errorsTable"), {"supportsControllersDiscrimination": false, "titles": ["Type of error", "Number of errors", "% in errors", "% in all samples"], "items": []}, function(index, item){
+    createTable($("#errorsTable"), {"supportsControllersDiscrimination": false, "titles": ["Type of error", "Number of errors", "% in errors", "% in all samples"], "items": [{"data": ["500/Internal Server Error", 90, 57.69230769230769, 27.77777777777778], "isController": false}, {"data": ["Non HTTP response code: org.apache.http.conn.HttpHostConnectException/Non HTTP response message: Connect to localhost:8001 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: connect", 66, 42.30769230769231, 20.37037037037037], "isController": false}]}, function(index, item){
         switch(index){
             case 2:
             case 3:
@@ -228,7 +228,7 @@ $(document).ready(function() {
     }, [[1, 1]]);
 
         // Create top5 errors by sampler
-    createTable($("#top5ErrorsBySamplerTable"), {"supportsControllersDiscrimination": false, "overall": {"data": ["Total", 2400, 0, "", "", "", "", "", "", "", "", "", ""], "isController": false}, "titles": ["Sample", "#Samples", "#Errors", "Error", "#Errors", "Error", "#Errors", "Error", "#Errors", "Error", "#Errors", "Error", "#Errors"], "items": [{"data": [], "isController": false}, {"data": [], "isController": false}, {"data": [], "isController": false}, {"data": [], "isController": false}]}, function(index, item){
+    createTable($("#top5ErrorsBySamplerTable"), {"supportsControllersDiscrimination": false, "overall": {"data": ["Total", 324, 156, "500/Internal Server Error", 90, "Non HTTP response code: org.apache.http.conn.HttpHostConnectException/Non HTTP response message: Connect to localhost:8001 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: connect", 66, "", "", "", "", "", ""], "isController": false}, "titles": ["Sample", "#Samples", "#Errors", "Error", "#Errors", "Error", "#Errors", "Error", "#Errors", "Error", "#Errors", "Error", "#Errors"], "items": [{"data": ["GET - Traffic Classification", 126, 26, "500/Internal Server Error", 26, "", "", "", "", "", "", "", ""], "isController": false}, {"data": ["GET - Traffic History", 66, 34, "500/Internal Server Error", 34, "", "", "", "", "", "", "", ""], "isController": false}, {"data": ["GET - Traffic History by ID", 66, 66, "Non HTTP response code: org.apache.http.conn.HttpHostConnectException/Non HTTP response message: Connect to localhost:8001 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: connect", 66, "", "", "", "", "", "", "", ""], "isController": false}, {"data": ["GET - Average Speed", 66, 30, "500/Internal Server Error", 30, "", "", "", "", "", "", "", ""], "isController": false}]}, function(index, item){
         return item;
     }, [[0, 0]], 0);
 

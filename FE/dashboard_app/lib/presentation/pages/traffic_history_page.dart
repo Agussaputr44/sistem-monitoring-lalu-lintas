@@ -1,16 +1,15 @@
 import 'dart:async';
 import 'dart:typed_data';
-import '../../common/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
 
+import '../../common/constants.dart'; 
 import '../../domain/entities/traffic.dart';
 import '../bloc/traffic_bloc.dart';
-
-const String _kWorkerApiBaseUrl = 'https://8e15236149aa.ngrok-free.app';
+import '../bloc/statistic_bloc.dart'; 
 
 class TrafficHistoryPage extends StatefulWidget {
   const TrafficHistoryPage({super.key});
@@ -23,6 +22,7 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
   DateTimeRange? selectedRange;
   Timer? _refreshTimer;
   final ScrollController _scrollController = ScrollController();
+  
   List<Traffic> _cachedTraffics = [];
   String _selectedTimeRange = 'all';
   String _selectedVehicleType = 'all';
@@ -33,11 +33,16 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
   @override
   void initState() {
     super.initState();
+    
+    context.read<StatisticBloc>().add(FetchStatisticData());
+
     _refreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (mounted) {
         context.read<TrafficBloc>().add(FetchTrafficData());
+        context.read<StatisticBloc>().add(FetchStatisticData());
       }
     });
+
     _scrollController.addListener(_onScroll);
   }
 
@@ -70,41 +75,17 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackgroundDark,
-      appBar: AppBar(
-        backgroundColor: kSurfaceDark,
-        elevation: 0,
-        title: Text("Traffic Monitoring Dashboard", style: kHeading6),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Row(
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: kSuccessGreen,
-                      shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: kSuccessGreen.withOpacity(0.5), blurRadius: 4, spreadRadius: 1)],
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text("Live", style: kSubtitle.copyWith(fontSize: 12, color: kSuccessGreen)),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(),
       body: BlocBuilder<TrafficBloc, TrafficState>(
         builder: (context, state) {
+          // Update cache jika data loaded
           if (state is TrafficLoaded) {
             _cachedTraffics = state.data;
           }
 
-          if (_cachedTraffics.isNotEmpty) {
+          if (_cachedTraffics.isNotEmpty || state is TrafficLoaded) {
             final traffics = _filterTraffics(_cachedTraffics);
+            
             return CustomScrollView(
               controller: _scrollController,
               physics: const ClampingScrollPhysics(),
@@ -115,20 +96,29 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
                     delegate: SliverChildListDelegate([
                       const SizedBox(height: 16),
                       _buildTimeRangeFilter(),
+                      const SizedBox(height: 16),
+                      
+                      // Bagian KPI Utama (Total & Avg Speed)
                       _buildMainKpiRow(traffics),
                       const SizedBox(height: 12),
+                      
+                      // Bagian KPI Per Tipe Kendaraan (Grid)
                       _buildTypeKpiRow(traffics),
                       const SizedBox(height: 16),
-                      // === MJPEG STREAM PLAYER (Custom Implementation) ===
-                      _MjpegStreamPlayer(url: '$_kWorkerApiBaseUrl/api/video_feed'),
-                      // ===================================================
+                      
+                      // CCTV Stream
+                      const _MjpegStreamPlayer(url: '$kUrl/api/video_feed'),
                       const SizedBox(height: 12),
+                      
+                      // Filters & Charts
                       _buildVehicleTypeFilter(),
                       const SizedBox(height: 12),
                       _buildFilterSection(context),
                       const SizedBox(height: 16),
                       _buildVehicleVolumeChart(traffics),
                       const SizedBox(height: 16),
+                      
+                      // Header List
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -136,7 +126,7 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(color: kPrimaryTeal.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
-                            child: Text("${traffics.length} total", style: kSubtitle.copyWith(fontSize: 11, color: kPrimaryTeal, fontWeight: FontWeight.w600)),
+                            child: Text("${traffics.length} items filtered", style: kSubtitle.copyWith(fontSize: 11, color: kPrimaryTeal, fontWeight: FontWeight.w600)),
                           ),
                         ],
                       ),
@@ -152,16 +142,7 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
               ],
             );
           } else if (state is TrafficError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, color: kDangerRed, size: 48),
-                  const SizedBox(height: 16),
-                  Text(state.message, style: kBodyText, textAlign: TextAlign.center),
-                ],
-              ),
-            );
+            return _buildErrorView(state.message);
           } else {
             return const Center(child: CircularProgressIndicator(color: kPrimaryTeal));
           }
@@ -169,13 +150,174 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: kPrimaryTeal,
-        onPressed: () => context.read<TrafficBloc>().add(FetchTrafficData()),
+        onPressed: () {
+          context.read<TrafficBloc>().add(FetchTrafficData());
+          context.read<StatisticBloc>().add(FetchStatisticData());
+        },
         child: const Icon(Icons.refresh, color: Colors.white),
       ),
     );
   }
 
-  // [Rest of methods remain the same - filter, KPI, chart, etc.]
+  // --- WIDGET BUILDERS ---
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: kSurfaceDark,
+      elevation: 0,
+      title: Text("Traffic Monitoring Dashboard", style: kHeading6),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: Center(
+            child: Row(
+              children: [
+                Container(
+                  width: 8, height: 8,
+                  decoration: BoxDecoration(
+                    color: kSuccessGreen,
+                    shape: BoxShape.circle,
+                    boxShadow: [BoxShadow(color: kSuccessGreen.withOpacity(0.5), blurRadius: 4, spreadRadius: 1)],
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text("Live", style: kSubtitle.copyWith(fontSize: 12, color: kSuccessGreen)),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // INTEGRASI STATISTIC BLOC DI SINI (Total Count)
+  Widget _buildMainKpiRow(List<Traffic> traffics) {
+    final totalLocal = traffics.length;
+    final avgSpeed = traffics.isNotEmpty ? traffics.map((t) => t.speedKmph).reduce((a, b) => a + b) / totalLocal : 0.0;
+    final avgConfidence = traffics.isNotEmpty ? traffics.map((t) => t.confidence).reduce((a, b) => a + b) / totalLocal : 0.0;
+
+    return BlocBuilder<StatisticBloc, StatisticState>(
+      builder: (context, state) {
+        String totalDisplay = "$totalLocal"; 
+        
+        if (state.state == RequestState.Loaded) {
+          final totalFromApi = state.statistics.fold(0, (sum, item) => sum + item.count);
+          totalDisplay = "$totalFromApi";
+        } else if (state.state == RequestState.Loading) {
+          totalDisplay = "...";
+        }
+
+        return Row(
+          children: [
+            Expanded(child: _buildKpiCard("Total Kendaraan", totalDisplay, Icons.directions_car, kPrimaryTeal)),
+            const SizedBox(width: 8),
+            Expanded(child: _buildKpiCard("Avg Speed", "${avgSpeed.toStringAsFixed(1)} km/h", Icons.speed, kSecondaryBlue)),
+            const SizedBox(width: 8),
+            Expanded(child: _buildKpiCard("Confidence", "${(avgConfidence * 100).toStringAsFixed(0)}%", Icons.verified, kSuccessGreen)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTypeKpiRow(List<Traffic> traffics) {
+    return BlocBuilder<StatisticBloc, StatisticState>(
+      builder: (context, state) {
+        Map<String, int> dataCountMap = {};
+
+        if (state.state == RequestState.Loaded) {
+          for (var item in state.statistics) {
+            dataCountMap[item.vehicleType.toLowerCase()] = item.count;
+          }
+        } else {
+          for (var t in traffics) {
+            dataCountMap[t.vehicleType.toLowerCase()] = (dataCountMap[t.vehicleType.toLowerCase()] ?? 0) + 1;
+          }
+        }
+
+        // Config UI
+        final vehicleData = [
+          {'type': 'car', 'label': 'MOBIL', 'icon': Icons.directions_car, 'color': Colors.lightBlueAccent},
+          {'type': 'motorcycle', 'label': 'MOTOR', 'icon': Icons.motorcycle, 'color': Colors.purpleAccent},
+          {'type': 'pickup', 'label': 'PICKUP', 'icon': Icons.front_loader, 'color': Colors.orangeAccent},
+          {'type': 'truck', 'label': 'TRUK', 'icon': Icons.local_shipping, 'color': Colors.redAccent},
+          {'type': 'bus', 'label': 'BUS', 'icon': Icons.directions_bus, 'color': Colors.greenAccent},
+        ];
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, crossAxisSpacing: 8, mainAxisSpacing: 8, childAspectRatio: 2.2
+          ),
+          itemCount: vehicleData.length,
+          itemBuilder: (context, index) {
+            final data = vehicleData[index];
+            final typeKey = data['type'] as String;
+            final count = dataCountMap[typeKey] ?? 0;
+            
+            return _buildCompactKpiCard(
+              data['label'] as String, 
+              "$count", 
+              data['icon'] as IconData, 
+              data['color'] as Color
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildKpiCard(String label, String value, IconData icon, Color color) {
+    return Card(
+      color: kSurfaceDark,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 4),
+            Text(label, style: kSubtitle.copyWith(fontSize: 11), textAlign: TextAlign.center, maxLines: 1),
+            const SizedBox(height: 2),
+            Text(value, style: kHeading6.copyWith(color: color, fontSize: 14), maxLines: 1),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactKpiCard(String label, String value, IconData icon, Color color) {
+    return Card(
+      color: kSurfaceDark,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: kSubtitle.copyWith(fontSize: 11)),
+                  Text(value, style: kHeading6.copyWith(color: color, fontSize: 16))
+                ]
+              )
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- FILTERS & CHARTS & LIST LOGIC ---
+
   List<Traffic> _filterTraffics(List<Traffic> traffics) {
     var filtered = traffics;
     if (_selectedTimeRange != 'all') {
@@ -202,87 +344,8 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     return filtered;
   }
 
-  Widget _buildMainKpiRow(List<Traffic> traffics) {
-    final total = traffics.length;
-    final avgSpeed = traffics.isNotEmpty ? traffics.map((t) => t.speedKmph).reduce((a, b) => a + b) / total : 0.0;
-    final avgConfidence = traffics.isNotEmpty ? traffics.map((t) => t.confidence).reduce((a, b) => a + b) / total : 0.0;
-    return Row(
-      children: [
-        Expanded(child: _buildKpiCard("Total Kendaraan", "$total", Icons.directions_car, kPrimaryTeal)),
-        const SizedBox(width: 8),
-        Expanded(child: _buildKpiCard("Avg Speed", "${avgSpeed.toStringAsFixed(1)} km/h", Icons.speed, kSecondaryBlue)),
-        const SizedBox(width: 8),
-        Expanded(child: _buildKpiCard("Confidence", "${(avgConfidence * 100).toStringAsFixed(0)}%", Icons.verified, kSuccessGreen)),
-      ],
-    );
-  }
-
-  Widget _buildTypeKpiRow(List<Traffic> traffics) {
-    final grouped = <String, int>{};
-    for (var t in traffics) {
-      grouped[t.vehicleType.toLowerCase()] = (grouped[t.vehicleType.toLowerCase()] ?? 0) + 1;
-    }
-    final vehicleData = [
-      {'type': 'mobil', 'label': 'MOBIL', 'icon': Icons.directions_car, 'color': Colors.lightBlueAccent},
-      {'type': 'motor', 'label': 'MOTOR', 'icon': Icons.motorcycle, 'color': Colors.purpleAccent},
-      {'type': 'truk', 'label': 'TRUK', 'icon': Icons.local_shipping, 'color': Colors.redAccent},
-      {'type': 'pickup', 'label': 'PICKUP', 'icon': Icons.front_loader, 'color': Colors.orangeAccent},
-      {'type': 'bus', 'label': 'BUS', 'icon': Icons.directions_bus, 'color': Colors.greenAccent},
-    ];
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 8, mainAxisSpacing: 8, childAspectRatio: 2.2),
-      itemCount: vehicleData.length,
-      itemBuilder: (context, index) {
-        final data = vehicleData[index];
-        final count = grouped[data['type']] ?? 0;
-        return _buildCompactKpiCard(data['label'] as String, "$count", data['icon'] as IconData, data['color'] as Color);
-      },
-    );
-  }
-
-  Widget _buildKpiCard(String label, String value, IconData icon, Color color) {
-    return Card(
-      color: kSurfaceDark,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 4),
-            Text(label, style: kSubtitle.copyWith(fontSize: 11), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 2),
-            Text(value, style: kHeading6.copyWith(color: color, fontSize: 14), maxLines: 1),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCompactKpiCard(String label, String value, IconData icon, Color color) {
-    return Card(
-      color: kSurfaceDark,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(width: 10),
-            Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [Text(label, style: kSubtitle.copyWith(fontSize: 11)), Text(value, style: kHeading6.copyWith(color: color, fontSize: 16))])),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildTimeRangeFilter() {
-    final timeRanges = {'all': 'Semua Waktu', '15min': '15 Menit Terakhir', '30min': '30 Menit Terakhir', '1hour': '1 Jam Terakhir', '3hours': '3 Jam Terakhir', 'today': 'Hari Ini'};
+    final timeRanges = {'all': 'Semua Waktu', '15min': '15 Menit', '30min': '30 Menit', '1hour': '1 Jam', '3hours': '3 Jam', 'today': 'Hari Ini'};
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -315,9 +378,9 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
   Widget _buildVehicleTypeFilter() {
     final vehicleTypes = {
       'all': {'label': 'Semua', 'icon': Icons.dashboard, 'color': kTextPrimary},
-      'mobil': {'label': 'Mobil', 'icon': Icons.directions_car, 'color': Colors.lightBlueAccent},
-      'motor': {'label': 'Motor', 'icon': Icons.motorcycle, 'color': Colors.purpleAccent},
-      'truk': {'label': 'Truk', 'icon': Icons.local_shipping, 'color': Colors.redAccent},
+      'car': {'label': 'Mobil', 'icon': Icons.directions_car, 'color': Colors.lightBlueAccent},
+      'motorcycle': {'label': 'Motor', 'icon': Icons.motorcycle, 'color': Colors.purpleAccent},
+      'truck': {'label': 'Truk', 'icon': Icons.local_shipping, 'color': Colors.redAccent},
       'pickup': {'label': 'Pickup', 'icon': Icons.front_loader, 'color': Colors.orangeAccent},
       'bus': {'label': 'Bus', 'icon': Icons.directions_bus, 'color': Colors.greenAccent},
     };
@@ -379,11 +442,10 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
   Widget _buildVehicleVolumeChart(List<Traffic> traffics) {
     if (traffics.isEmpty) return const SizedBox.shrink();
     final grouped = <int, int>{};
-    for (var t in traffics) {
-      grouped[t.detectedAt.hour] = (grouped[t.detectedAt.hour] ?? 0) + 1;
-    }
+    for (var t in traffics) { grouped[t.detectedAt.hour] = (grouped[t.detectedAt.hour] ?? 0) + 1; }
     final sortedEntries = grouped.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
     final maxY = sortedEntries.isNotEmpty ? sortedEntries.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble() : 1.0;
+    
     return Card(
       color: kSurfaceDark,
       elevation: 0,
@@ -393,7 +455,7 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Volume per Jam (Berdasarkan Filter)", style: kHeading6.copyWith(fontSize: 14, color: kTextSecondary)),
+            Text("Volume per Jam (Filtered)", style: kHeading6.copyWith(fontSize: 14, color: kTextSecondary)),
             const SizedBox(height: 20),
             SizedBox(
               height: 180,
@@ -434,11 +496,30 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
     );
   }
 
+  Widget _buildErrorView(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, color: kDangerRed, size: 48),
+          const SizedBox(height: 16),
+          Text(message, style: kBodyText, textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => context.read<TrafficBloc>().add(FetchTrafficData()),
+            style: ElevatedButton.styleFrom(backgroundColor: kPrimaryTeal),
+            child: const Text("Coba Lagi"),
+          )
+        ],
+      ),
+    );
+  }
+
   IconData _getVehicleIcon(String type) {
     switch (type.toLowerCase()) {
-      case 'truk': return Icons.local_shipping;
+      case 'truck': return Icons.local_shipping;
       case 'pickup': return Icons.front_loader;
-      case 'motor': return Icons.motorcycle;
+      case 'motorcycle': return Icons.motorcycle;
       case 'bus': return Icons.directions_bus;
       default: return Icons.directions_car;
     }
@@ -446,11 +527,11 @@ class _TrafficHistoryPageState extends State<TrafficHistoryPage> {
 
   Color _getVehicleColor(String type) {
     switch (type.toLowerCase()) {
-      case 'truk': return Colors.redAccent;
+      case 'truck': return Colors.redAccent;
       case 'pickup': return Colors.orangeAccent;
-      case 'motor': return Colors.purpleAccent;
+      case 'motorcycle': return Colors.purpleAccent;
       case 'bus': return Colors.greenAccent;
-      case 'mobil': return Colors.lightBlueAccent;
+      case 'car': return Colors.lightBlueAccent;
       default: return kTextSecondary;
     }
   }
@@ -488,17 +569,13 @@ class _MjpegStreamPlayerState extends State<_MjpegStreamPlayer> {
 
     final request = http.Request('GET', Uri.parse(widget.url));
     request.headers['ngrok-skip-browser-warning'] = 'true';
-    request.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
+    request.headers['User-Agent'] = 'Mozilla/5.0';
 
     http.Client().send(request).then((response) {
       if (response.statusCode == 200) {
         final boundary = _getBoundary(response.headers['content-type'] ?? '');
         if (boundary.isEmpty) {
-          setState(() {
-            _hasError = true;
-            _errorMessage = 'Invalid stream format';
-            _isLoading = false;
-          });
+          setState(() { _hasError = true; _errorMessage = 'Invalid stream'; _isLoading = false; });
           return;
         }
 
@@ -508,41 +585,18 @@ class _MjpegStreamPlayerState extends State<_MjpegStreamPlayer> {
             buffer.addAll(chunk);
             final frame = _extractFrame(buffer, boundary);
             if (frame != null) {
-              setState(() {
-                _currentFrame = Uint8List.fromList(frame);
-                _isLoading = false;
-              });
+              if (mounted) setState(() { _currentFrame = Uint8List.fromList(frame); _isLoading = false; });
               buffer.clear();
             }
           },
-          onError: (e) {
-            setState(() {
-              _hasError = true;
-              _errorMessage = 'Stream error: $e';
-              _isLoading = false;
-            });
-          },
-          onDone: () {
-            setState(() {
-              _hasError = true;
-              _errorMessage = 'Stream ended';
-              _isLoading = false;
-            });
-          },
+          onError: (e) { if (mounted) setState(() { _hasError = true; _errorMessage = '$e'; _isLoading = false; }); },
+          onDone: () { if (mounted) setState(() { _hasError = true; _errorMessage = 'Done'; _isLoading = false; }); },
         );
       } else {
-        setState(() {
-          _hasError = true;
-          _errorMessage = 'HTTP ${response.statusCode}';
-          _isLoading = false;
-        });
+        if (mounted) setState(() { _hasError = true; _errorMessage = 'HTTP ${response.statusCode}'; _isLoading = false; });
       }
     }).catchError((e) {
-      setState(() {
-        _hasError = true;
-        _errorMessage = 'Connection error: $e';
-        _isLoading = false;
-      });
+      if (mounted) setState(() { _hasError = true; _errorMessage = '$e'; _isLoading = false; });
     });
   }
 
@@ -555,13 +609,9 @@ class _MjpegStreamPlayerState extends State<_MjpegStreamPlayer> {
     final boundaryBytes = '--$boundary'.codeUnits;
     final startIndex = _indexOf(buffer, boundaryBytes);
     if (startIndex == -1) return null;
-
     final jpegStart = _indexOf(buffer, [0xFF, 0xD8], startIndex);
     final jpegEnd = _indexOf(buffer, [0xFF, 0xD9], jpegStart);
-    
-    if (jpegStart != -1 && jpegEnd != -1) {
-      return buffer.sublist(jpegStart, jpegEnd + 2);
-    }
+    if (jpegStart != -1 && jpegEnd != -1) return buffer.sublist(jpegStart, jpegEnd + 2);
     return null;
   }
 
@@ -569,10 +619,7 @@ class _MjpegStreamPlayerState extends State<_MjpegStreamPlayer> {
     for (int i = start; i < data.length - pattern.length; i++) {
       bool match = true;
       for (int j = 0; j < pattern.length; j++) {
-        if (data[i + j] != pattern[j]) {
-          match = false;
-          break;
-        }
+        if (data[i + j] != pattern[j]) { match = false; break; }
       }
       if (match) return i;
     }
@@ -581,7 +628,7 @@ class _MjpegStreamPlayerState extends State<_MjpegStreamPlayer> {
 
   void _reload() {
     _streamSubscription?.cancel();
-    setState(() => _streamKey = DateTime.now().millisecondsSinceEpoch.toString());
+    if (mounted) setState(() => _streamKey = DateTime.now().millisecondsSinceEpoch.toString());
     _startStream();
   }
 
@@ -599,7 +646,6 @@ class _MjpegStreamPlayerState extends State<_MjpegStreamPlayer> {
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -611,66 +657,20 @@ class _MjpegStreamPlayerState extends State<_MjpegStreamPlayer> {
                 const Spacer(),
                 if (!_hasError && !_isLoading) _BlinkingLiveIndicator(),
                 const SizedBox(width: 8),
-                IconButton(
-                  icon: Icon(Icons.refresh, size: 18),
-                  color: kPrimaryTeal,
-                  onPressed: _reload,
-                  padding: EdgeInsets.zero,
-                  constraints: BoxConstraints(),
-                  tooltip: 'Reload Stream',
-                ),
+                IconButton(icon: Icon(Icons.refresh, size: 18), color: kPrimaryTeal, onPressed: _reload, padding: EdgeInsets.zero, constraints: BoxConstraints(), tooltip: 'Reload'),
               ],
             ),
           ),
           Container(
-            height: 220,
-            width: double.infinity,
-            margin: const EdgeInsets.all(8),
+            height: 220, width: double.infinity, margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(8)),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: _isLoading
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(color: kPrimaryTeal, strokeWidth: 2),
-                          const SizedBox(height: 12),
-                          Text('Connecting...', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                        ],
-                      ),
-                    )
+                  ? Center(child: CircularProgressIndicator(color: kPrimaryTeal))
                   : _hasError
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.videocam_off, color: Colors.white38, size: 48),
-                                const SizedBox(height: 12),
-                                Text('Stream Offline', style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 8),
-                                Text(_errorMessage, style: TextStyle(color: Colors.white54, fontSize: 11), textAlign: TextAlign.center),
-                                const SizedBox(height: 16),
-                                ElevatedButton.icon(
-                                  onPressed: _reload,
-                                  icon: Icon(Icons.refresh, size: 16),
-                                  label: Text('Coba Lagi'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: kPrimaryTeal,
-                                    foregroundColor: Colors.white,
-                                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : _currentFrame != null
-                          ? Image.memory(_currentFrame!, fit: BoxFit.contain, gaplessPlayback: true)
-                          : Center(child: Text('No frame', style: TextStyle(color: Colors.white54))),
+                      ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.videocam_off, color: Colors.white38, size: 48), Text(_errorMessage, style: TextStyle(color: Colors.white54, fontSize: 11)), TextButton(onPressed: _reload, child: Text("Retry"))]))
+                      : Image.memory(_currentFrame!, fit: BoxFit.contain, gaplessPlayback: true),
             ),
           ),
         ],
@@ -685,19 +685,13 @@ class _BlinkingLiveIndicator extends StatefulWidget {
 }
 
 class _BlinkingLiveIndicatorState extends State<_BlinkingLiveIndicator> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  late AnimationController _c;
   @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 800))..repeat(reverse: true);
-  }
+  void initState() { super.initState(); _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 800))..repeat(reverse: true); }
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  void dispose() { _c.dispose(); super.dispose(); }
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(opacity: _controller, child: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: kDangerRed, borderRadius: BorderRadius.circular(4)), child: const Text("LIVE", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))));
+    return FadeTransition(opacity: _c, child: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: kDangerRed, borderRadius: BorderRadius.circular(4)), child: const Text("LIVE", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))));
   }
 }

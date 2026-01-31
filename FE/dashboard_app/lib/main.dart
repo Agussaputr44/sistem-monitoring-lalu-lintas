@@ -1,3 +1,5 @@
+import 'package:dashboard_app/presentation/bloc/statistic_bloc.dart';
+
 import 'presentation/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,6 +21,9 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (_) => di.locator<TrafficBloc>()..add(FetchTrafficData()),
+        ),
+        BlocProvider(
+          create: (_) => di.locator<StatisticBloc>()..add(FetchStatisticData()),
         ),
       ],
       child: MaterialApp(

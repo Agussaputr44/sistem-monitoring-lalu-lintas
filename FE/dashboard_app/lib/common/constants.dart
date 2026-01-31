@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+
+const String kUrl = "http://76.13.18.72:8000";
 // === COLORS ===
 const Color kBackgroundDark = Color(0xFF0D1117);
 const Color kSurfaceDark = Color(0xFF161B22);

@@ -1,0 +1,6 @@
+Label,# Samples,Average,Min,Max,Std. Dev.,Error %,Throughput,Received KB/sec,Sent KB/sec,Avg. Bytes
+GET - Traffic Classification,250,26608,3182,43620,10817.35,0.000%,2.79952,0.84,0.47,307.0
+GET - Traffic History by ID,250,13765,63,30725,10028.45,0.000%,2.83312,0.79,0.48,285.1
+GET - Average Speed,250,9643,60,30956,9523.80,0.000%,2.68005,0.53,0.42,204.0
+GET - Traffic History,250,6863,63,30280,9245.60,2.800%,2.52278,33.27,0.39,13503.0
+TOTAL,1000,14220,60,43620,12475.14,0.700%,9.75391,34.05,1.58,3574.8

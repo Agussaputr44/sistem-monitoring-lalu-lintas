@@ -1,92 +1,654 @@
-2025-12-15 21:10:35,666 INFO o.a.j.u.JMeterUtils: Setting Locale to en_EN
-2025-12-15 21:10:35,695 INFO o.a.j.JMeter: Loading user properties from: C:\Jmeter\apache-jmeter-5.6.3\bin\user.properties
-2025-12-15 21:10:35,696 INFO o.a.j.JMeter: Loading system properties from: C:\Jmeter\apache-jmeter-5.6.3\bin\system.properties
-2025-12-15 21:10:35,705 INFO o.a.j.JMeter: Copyright (c) 1998-2024 The Apache Software Foundation
-2025-12-15 21:10:35,705 INFO o.a.j.JMeter: Version 5.6.3
-2025-12-15 21:10:35,705 INFO o.a.j.JMeter: java.version=21.0.2
-2025-12-15 21:10:35,705 INFO o.a.j.JMeter: java.vm.name=Java HotSpot(TM) 64-Bit Server VM
-2025-12-15 21:10:35,705 INFO o.a.j.JMeter: os.name=Windows 11
-2025-12-15 21:10:35,705 INFO o.a.j.JMeter: os.arch=amd64
-2025-12-15 21:10:35,706 INFO o.a.j.JMeter: os.version=10.0
-2025-12-15 21:10:35,706 INFO o.a.j.JMeter: file.encoding=UTF-8
-2025-12-15 21:10:35,706 INFO o.a.j.JMeter: java.awt.headless=true
-2025-12-15 21:10:35,706 INFO o.a.j.JMeter: Max memory     =1073741824
-2025-12-15 21:10:35,706 INFO o.a.j.JMeter: Available Processors =16
-2025-12-15 21:10:35,716 INFO o.a.j.JMeter: Default Locale=English (EN)
-2025-12-15 21:10:35,716 INFO o.a.j.JMeter: JMeter  Locale=English (EN)
-2025-12-15 21:10:35,717 INFO o.a.j.JMeter: JMeterHome=C:\Jmeter\apache-jmeter-5.6.3
-2025-12-15 21:10:35,717 INFO o.a.j.JMeter: user.dir  =C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project
-2025-12-15 21:10:35,717 INFO o.a.j.JMeter: PWD       =C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project
-2025-12-15 21:10:35,720 INFO o.a.j.JMeter: IP: 192.168.1.162 Name: Agussaputra FullName: Agussaputra
-2025-12-15 21:10:35,737 INFO o.a.j.JMeter: Setting property 'jmeter.reportgenerator.outputdir' to:'C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project\testplan'
-2025-12-15 21:10:35,740 INFO o.a.j.r.d.ReportGenerator: ReportGenerator will use for Parsing the separator: ','
-2025-12-15 21:10:35,740 INFO o.a.j.r.d.ReportGenerator: Will only generate report from results file: dashboard.jtl
-2025-12-15 21:10:35,740 INFO o.a.j.r.d.ReportGenerator: Reading report generator properties from: C:\Jmeter\apache-jmeter-5.6.3\bin\reportgenerator.properties
-2025-12-15 21:10:35,741 INFO o.a.j.r.d.ReportGenerator: Merging with JMeter properties
-2025-12-15 21:10:35,745 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.temp_dir' not found, using default value 'temp' instead.
-2025-12-15 21:10:35,748 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.apdex_per_transaction' not found, using default value 'null' instead.
-2025-12-15 21:10:35,758 INFO o.a.j.r.c.ReportGeneratorConfiguration: apdex_per_transaction is empty, not APDEX per transaction customization
-2025-12-15 21:10:35,759 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.sample_filter' not found, using default value 'null' instead.
-2025-12-15 21:10:35,759 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.report_title' not found, using default value 'null' instead.
-2025-12-15 21:10:35,759 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.start_date' not found, using default value 'null' instead.
-2025-12-15 21:10:35,759 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.end_date' not found, using default value 'null' instead.
-2025-12-15 21:10:35,759 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.date_format' not found, using default value 'null' instead.
-2025-12-15 21:10:35,759 INFO o.a.j.r.c.ReportGeneratorConfiguration: Will use date range start date: null, end date: null
-2025-12-15 21:10:35,774 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.totalTPS.exclude_controllers' not found, using default value 'false' instead.
-2025-12-15 21:10:35,775 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.activeThreadsOverTime.exclude_controllers' not found, using default value 'false' instead.
-2025-12-15 21:10:35,775 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.timeVsThreads.exclude_controllers' not found, using default value 'false' instead.
-2025-12-15 21:10:35,775 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimeDistribution.exclude_controllers' not found, using default value 'false' instead.
-2025-12-15 21:10:35,775 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.transactionsPerSecond.exclude_controllers' not found, using default value 'false' instead.
-2025-12-15 21:10:35,775 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimePercentiles.exclude_controllers' not found, using default value 'false' instead.
-2025-12-15 21:10:35,775 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimePercentilesOverTime.exclude_controllers' not found, using default value 'false' instead.
-2025-12-15 21:10:35,775 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimesOverTime.exclude_controllers' not found, using default value 'false' instead.
-2025-12-15 21:10:35,775 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.connectTimeOverTime.exclude_controllers' not found, using default value 'false' instead.
-2025-12-15 21:10:35,775 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.latenciesOverTime.exclude_controllers' not found, using default value 'false' instead.
-2025-12-15 21:10:35,776 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.filters_only_sample_series' not found, using default value 'true' instead.
-2025-12-15 21:10:35,776 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.series_filter' not found, using default value '' instead.
-2025-12-15 21:10:35,776 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.show_controllers_only' not found, using default value 'false' instead.
-2025-12-15 21:10:35,777 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.filters_only_sample_series' not found, using default value 'true' instead.
-2025-12-15 21:10:35,777 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.series_filter' not found, using default value '' instead.
-2025-12-15 21:10:35,777 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.show_controllers_only' not found, using default value 'false' instead.
-2025-12-15 21:10:36,022 INFO o.a.j.s.SaveService: Testplan (JMX) version: 2.2. Testlog (JTL) version: 2.2
-2025-12-15 21:10:36,057 INFO o.a.j.s.SaveService: Using SaveService properties version 5.0
-2025-12-15 21:10:36,060 INFO o.a.j.s.SaveService: Using SaveService properties file encoding UTF-8
-2025-12-15 21:10:36,082 INFO o.a.j.r.p.NormalizerSampleConsumer: Using format, 'ms', to parse timeStamp field
-2025-12-15 21:10:36,283 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.AggregateConsumer#stopProducing(): beginDate produced 0 samples
-2025-12-15 21:10:36,283 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.AggregateConsumer#stopProducing(): endDate produced 0 samples
-2025-12-15 21:10:36,295 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.ApdexSummaryConsumer#stopProducing(): apdexSummary produced 0 samples
-2025-12-15 21:10:36,295 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.RequestsSummaryConsumer#stopProducing(): requestsSummary produced 0 samples
-2025-12-15 21:10:36,312 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.StatisticsSummaryConsumer#stopProducing(): statisticsSummary produced 0 samples
-2025-12-15 21:10:36,317 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.Top5ErrorsBySamplerConsumer#stopProducing(): top5ErrorsBySampler produced 0 samples
-2025-12-15 21:10:36,317 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.ErrorsSummaryConsumer#stopProducing(): errorsSummary produced 0 samples
-2025-12-15 21:10:36,317 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.HitsPerSecondGraphConsumer#stopProducing(): hitsPerSecond produced 0 samples
-2025-12-15 21:10:36,418 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.LatencyVSRequestGraphConsumer#stopProducing(): latencyVsRequest produced 0 samples
-2025-12-15 21:10:36,419 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.SyntheticResponseTimeDistributionGraphConsumer#stopProducing(): syntheticResponseTimeDistribution produced 0 samples
-2025-12-15 21:10:36,419 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.BytesThroughputGraphConsumer#stopProducing(): bytesThroughputOverTime produced 0 samples
-2025-12-15 21:10:36,419 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.CodesPerSecondGraphConsumer#stopProducing(): codesPerSecond produced 0 samples
-2025-12-15 21:10:36,451 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimeVSRequestGraphConsumer#stopProducing(): responseTimeVsRequest produced 0 samples
-2025-12-15 21:10:36,452 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.FilterConsumer#stopProducing(): startIntervalControlerFilter produced 16800 samples
-2025-12-15 21:10:36,452 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.TotalTPSGraphConsumer#stopProducing(): totalTPS produced 0 samples
-2025-12-15 21:10:36,452 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ActiveThreadsGraphConsumer#stopProducing(): activeThreadsOverTime produced 0 samples
-2025-12-15 21:10:36,452 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.TimeVSThreadGraphConsumer#stopProducing(): timeVsThreads produced 0 samples
-2025-12-15 21:10:36,452 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimeDistributionGraphConsumer#stopProducing(): responseTimeDistribution produced 0 samples
-2025-12-15 21:10:36,452 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.TransactionsPerSecondGraphConsumer#stopProducing(): transactionsPerSecond produced 0 samples
-2025-12-15 21:10:36,453 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimePercentilesGraphConsumer#stopProducing(): responseTimePercentiles produced 0 samples
-2025-12-15 21:10:36,454 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimePercentilesOverTimeGraphConsumer#stopProducing(): responseTimePercentilesOverTime produced 0 samples
-2025-12-15 21:10:36,454 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimeOverTimeGraphConsumer#stopProducing(): responseTimesOverTime produced 0 samples
-2025-12-15 21:10:36,454 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ConnectTimeOverTimeGraphConsumer#stopProducing(): connectTimeOverTime produced 0 samples
-2025-12-15 21:10:36,454 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.LatencyOverTimeGraphConsumer#stopProducing(): latenciesOverTime produced 0 samples
-2025-12-15 21:10:36,454 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.FilterConsumer#stopProducing(): nameFilter produced 36000 samples
-2025-12-15 21:10:36,454 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.FilterConsumer#stopProducing(): dateRangeFilter produced 7200 samples
-2025-12-15 21:10:36,454 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.NormalizerSampleConsumer#stopProducing(): normalizer produced 2400 samples
-2025-12-15 21:10:36,457 INFO o.a.j.r.p.CsvFileSampleSource: produce(): 2400 samples produced in 350ms on channel 0
-2025-12-15 21:10:36,457 INFO o.a.j.r.d.ReportGenerator: Exporting data using exporter:'json' of className:'org.apache.jmeter.report.dashboard.JsonExporter'
-2025-12-15 21:10:36,575 INFO o.a.j.r.d.JsonExporter: Found data for consumer statisticsSummary in context
-2025-12-15 21:10:36,575 INFO o.a.j.r.d.JsonExporter: Creating statistics for overall
-2025-12-15 21:10:36,575 INFO o.a.j.r.d.JsonExporter: Creating statistics for other transactions
-2025-12-15 21:10:36,576 INFO o.a.j.r.d.JsonExporter: Checking output folder
-2025-12-15 21:10:36,576 INFO o.a.j.r.d.JsonExporter: Writing statistics JSON to C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project\testplan\statistics.json
-2025-12-15 21:10:36,619 INFO o.a.j.r.d.ReportGenerator: Exporting data using exporter:'html' of className:'org.apache.jmeter.report.dashboard.HtmlTemplateExporter'
-2025-12-15 21:10:36,622 INFO o.a.j.r.d.HtmlTemplateExporter: Will generate dashboard in folder: C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project\testplan
-2025-12-15 21:10:36,776 INFO o.a.j.r.d.HtmlTemplateExporter: Report will be generated in: C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project\testplan, creating folder structure
-2025-12-15 21:10:36,778 INFO o.a.j.r.d.TemplateVisitor: Copying folder from 'C:\Jmeter\apache-jmeter-5.6.3\bin\report-template' to 'C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project\testplan', got message: C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project\testplan, found non empty folder with following content [C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project\testplan\statistics.json], will be ignored
+2026-01-15 03:03:09,882 INFO o.a.j.u.JMeterUtils: Setting Locale to en_EN
+2026-01-15 03:03:09,911 INFO o.a.j.JMeter: Loading user properties from: C:\Jmeter\apache-jmeter-5.6.3\bin\user.properties
+2026-01-15 03:03:09,912 INFO o.a.j.JMeter: Loading system properties from: C:\Jmeter\apache-jmeter-5.6.3\bin\system.properties
+2026-01-15 03:03:09,922 INFO o.a.j.JMeter: Copyright (c) 1998-2024 The Apache Software Foundation
+2026-01-15 03:03:09,923 INFO o.a.j.JMeter: Version 5.6.3
+2026-01-15 03:03:09,923 INFO o.a.j.JMeter: java.version=21.0.2
+2026-01-15 03:03:09,923 INFO o.a.j.JMeter: java.vm.name=Java HotSpot(TM) 64-Bit Server VM
+2026-01-15 03:03:09,923 INFO o.a.j.JMeter: os.name=Windows 11
+2026-01-15 03:03:09,923 INFO o.a.j.JMeter: os.arch=amd64
+2026-01-15 03:03:09,925 INFO o.a.j.JMeter: os.version=10.0
+2026-01-15 03:03:09,925 INFO o.a.j.JMeter: file.encoding=UTF-8
+2026-01-15 03:03:09,925 INFO o.a.j.JMeter: java.awt.headless=true
+2026-01-15 03:03:09,925 INFO o.a.j.JMeter: Max memory     =1073741824
+2026-01-15 03:03:09,925 INFO o.a.j.JMeter: Available Processors =16
+2026-01-15 03:03:09,935 INFO o.a.j.JMeter: Default Locale=English (EN)
+2026-01-15 03:03:09,935 INFO o.a.j.JMeter: JMeter  Locale=English (EN)
+2026-01-15 03:03:09,935 INFO o.a.j.JMeter: JMeterHome=C:\Jmeter\apache-jmeter-5.6.3
+2026-01-15 03:03:09,935 INFO o.a.j.JMeter: user.dir  =C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project
+2026-01-15 03:03:09,935 INFO o.a.j.JMeter: PWD       =C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project
+2026-01-15 03:03:09,937 INFO o.a.j.JMeter: IP: 10.127.249.117 Name: Agussaputra FullName: Agussaputra
+2026-01-15 03:03:09,947 INFO o.a.j.JMeter: Setting property 'jmeter.reportgenerator.outputdir' to:'C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project\results\laporan_html'
+2026-01-15 03:03:09,950 INFO o.a.j.s.FileServer: Default base='C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project'
+2026-01-15 03:03:09,951 INFO o.a.j.s.FileServer: Set new base='C:\Coolyeah\Final Project\monitoring-lalu-lintas\docs-project\scenarios'
+2026-01-15 03:03:10,169 INFO o.a.j.s.SaveService: Testplan (JMX) version: 2.2. Testlog (JTL) version: 2.2
+2026-01-15 03:03:10,203 INFO o.a.j.s.SaveService: Using SaveService properties version 5.0
+2026-01-15 03:03:10,206 INFO o.a.j.s.SaveService: Using SaveService properties file encoding UTF-8
+2026-01-15 03:03:10,210 INFO o.a.j.s.SaveService: Loading file: scenarios\traffic_monitoring_test.jmx
+2026-01-15 03:03:10,270 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/html is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-01-15 03:03:10,271 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xhtml+xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-01-15 03:03:10,271 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-01-15 03:03:10,271 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-01-15 03:03:10,271 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/vnd.wap.wml is org.apache.jmeter.protocol.http.parser.RegexpHTMLParser
+2026-01-15 03:03:10,271 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/css is org.apache.jmeter.protocol.http.parser.CssParser
+2026-01-15 03:03:10,314 INFO o.a.j.JMeter: Creating summariser <summary>
+2026-01-15 03:03:10,325 INFO o.a.j.r.d.ReportGenerator: ReportGenerator will use for Parsing the separator: ','
+2026-01-15 03:03:10,326 INFO o.a.j.r.d.ReportGenerator: Will generate report at end of test from  results file: results/dashboard.jtl
+2026-01-15 03:03:10,326 INFO o.a.j.r.d.ReportGenerator: Reading report generator properties from: C:\Jmeter\apache-jmeter-5.6.3\bin\reportgenerator.properties
+2026-01-15 03:03:10,327 INFO o.a.j.r.d.ReportGenerator: Merging with JMeter properties
+2026-01-15 03:03:10,332 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.temp_dir' not found, using default value 'temp' instead.
+2026-01-15 03:03:10,335 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.apdex_per_transaction' not found, using default value 'null' instead.
+2026-01-15 03:03:10,335 INFO o.a.j.r.c.ReportGeneratorConfiguration: apdex_per_transaction is empty, not APDEX per transaction customization
+2026-01-15 03:03:10,336 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.sample_filter' not found, using default value 'null' instead.
+2026-01-15 03:03:10,336 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.report_title' not found, using default value 'null' instead.
+2026-01-15 03:03:10,336 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.start_date' not found, using default value 'null' instead.
+2026-01-15 03:03:10,336 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.end_date' not found, using default value 'null' instead.
+2026-01-15 03:03:10,336 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.date_format' not found, using default value 'null' instead.
+2026-01-15 03:03:10,337 INFO o.a.j.r.c.ReportGeneratorConfiguration: Will use date range start date: null, end date: null
+2026-01-15 03:03:10,342 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.totalTPS.exclude_controllers' not found, using default value 'false' instead.
+2026-01-15 03:03:10,342 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.activeThreadsOverTime.exclude_controllers' not found, using default value 'false' instead.
+2026-01-15 03:03:10,342 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.timeVsThreads.exclude_controllers' not found, using default value 'false' instead.
+2026-01-15 03:03:10,342 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimeDistribution.exclude_controllers' not found, using default value 'false' instead.
+2026-01-15 03:03:10,342 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.transactionsPerSecond.exclude_controllers' not found, using default value 'false' instead.
+2026-01-15 03:03:10,343 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimePercentiles.exclude_controllers' not found, using default value 'false' instead.
+2026-01-15 03:03:10,343 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimePercentilesOverTime.exclude_controllers' not found, using default value 'false' instead.
+2026-01-15 03:03:10,343 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimesOverTime.exclude_controllers' not found, using default value 'false' instead.
+2026-01-15 03:03:10,343 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.connectTimeOverTime.exclude_controllers' not found, using default value 'false' instead.
+2026-01-15 03:03:10,343 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.latenciesOverTime.exclude_controllers' not found, using default value 'false' instead.
+2026-01-15 03:03:10,344 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.filters_only_sample_series' not found, using default value 'true' instead.
+2026-01-15 03:03:10,344 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.series_filter' not found, using default value '' instead.
+2026-01-15 03:03:10,344 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.show_controllers_only' not found, using default value 'false' instead.
+2026-01-15 03:03:10,345 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.filters_only_sample_series' not found, using default value 'true' instead.
+2026-01-15 03:03:10,345 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.series_filter' not found, using default value '' instead.
+2026-01-15 03:03:10,345 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.show_controllers_only' not found, using default value 'false' instead.
+2026-01-15 03:03:10,364 INFO o.a.j.e.StandardJMeterEngine: Running the test!
+2026-01-15 03:03:10,365 INFO o.a.j.s.SampleEvent: List of sample_variables: []
+2026-01-15 03:03:10,365 INFO o.a.j.s.SampleEvent: List of sample_variables: []
+2026-01-15 03:03:10,371 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must contain the string: '.functions.'
+2026-01-15 03:03:10,371 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must not contain the string: '.gui.'
+2026-01-15 03:03:10,454 INFO o.a.j.r.ClassFinder: Will scan jar C:\Jmeter\apache-jmeter-5.6.3\lib\ext\jmeter-plugins-casutg-3.1.1.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-01-15 03:03:10,473 INFO o.a.j.r.ClassFinder: Will scan jar C:\Jmeter\apache-jmeter-5.6.3\lib\ext\jmeter-plugins-graphs-basic-2.0.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-01-15 03:03:10,480 INFO o.a.j.r.ClassFinder: Will scan jar C:\Jmeter\apache-jmeter-5.6.3\lib\ext\jmeter-plugins-manager-1.11.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-01-15 03:03:10,615 INFO o.a.j.JMeter: Running test (1768420990615)
+2026-01-15 03:03:10,633 INFO o.a.j.e.StandardJMeterEngine: Starting ThreadGroup: 1 : Incremental User Thread 
+2026-01-15 03:03:10,634 INFO o.a.j.e.StandardJMeterEngine: Starting 1000 threads for group Incremental User Thread .
+2026-01-15 03:03:10,634 INFO o.a.j.e.StandardJMeterEngine: Thread will continue on error
+2026-01-15 03:03:10,634 INFO k.a.j.t.AbstractSimpleThreadGroup: Starting thread group number 1 threads 1000
+2026-01-15 03:03:10,654 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-1
+2026-01-15 03:03:10,694 INFO o.a.j.p.h.s.HTTPHCAbstractImpl: Local host = Agussaputra
+2026-01-15 03:03:10,720 INFO o.a.j.p.h.s.HTTPHC4Impl: HTTP request retry count = 0
+2026-01-15 03:03:10,724 INFO o.a.j.s.SampleResult: Note: Sample TimeStamps are START times
+2026-01-15 03:03:10,724 INFO o.a.j.s.SampleResult: sampleresult.default.encoding is set to UTF-8
+2026-01-15 03:03:10,724 INFO o.a.j.s.SampleResult: sampleresult.useNanoTime=true
+2026-01-15 03:03:10,725 INFO o.a.j.s.SampleResult: sampleresult.nanoThreadSleep=5000
+2026-01-15 03:03:10,837 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-2
+2026-01-15 03:03:11,031 INFO k.a.j.t.AbstractSimpleThreadGroup: Started thread group number 1
+2026-01-15 03:03:11,032 INFO o.a.j.e.StandardJMeterEngine: Starting ThreadGroup: 2 : Thread Group
+2026-01-15 03:03:11,032 INFO o.a.j.e.StandardJMeterEngine: Starting 150 threads for group Thread Group.
+2026-01-15 03:03:11,032 INFO o.a.j.e.StandardJMeterEngine: Thread will continue on error
+2026-01-15 03:03:11,032 INFO o.a.j.t.ThreadGroup: Starting thread group... number=2 threads=150 ramp-up=50 delayedStart=false
+2026-01-15 03:03:11,033 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-1
+2026-01-15 03:03:11,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-3
+2026-01-15 03:03:11,084 INFO o.a.j.t.ThreadGroup: Started thread group number 2
+2026-01-15 03:03:11,084 INFO o.a.j.e.StandardJMeterEngine: All thread groups have been started
+2026-01-15 03:03:11,237 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-4
+2026-01-15 03:03:11,367 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-2
+2026-01-15 03:03:11,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-5
+2026-01-15 03:03:11,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-6
+2026-01-15 03:03:11,699 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-3
+2026-01-15 03:03:11,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-7
+2026-01-15 03:03:12,033 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-4
+2026-01-15 03:03:12,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-8
+2026-01-15 03:03:12,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-9
+2026-01-15 03:03:12,366 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-5
+2026-01-15 03:03:12,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-10
+2026-01-15 03:03:12,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-11
+2026-01-15 03:03:12,698 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-6
+2026-01-15 03:03:12,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-12
+2026-01-15 03:03:13,032 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-7
+2026-01-15 03:03:13,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-13
+2026-01-15 03:03:13,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-14
+2026-01-15 03:03:13,365 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-8
+2026-01-15 03:03:13,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-15
+2026-01-15 03:03:13,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-16
+2026-01-15 03:03:13,697 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-9
+2026-01-15 03:03:13,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-17
+2026-01-15 03:03:14,031 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-10
+2026-01-15 03:03:14,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-18
+2026-01-15 03:03:14,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-19
+2026-01-15 03:03:14,364 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-11
+2026-01-15 03:03:14,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-20
+2026-01-15 03:03:14,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-21
+2026-01-15 03:03:14,695 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-12
+2026-01-15 03:03:14,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-22
+2026-01-15 03:03:15,030 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-13
+2026-01-15 03:03:15,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-23
+2026-01-15 03:03:15,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-24
+2026-01-15 03:03:15,361 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-14
+2026-01-15 03:03:15,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-25
+2026-01-15 03:03:15,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-26
+2026-01-15 03:03:15,695 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-15
+2026-01-15 03:03:15,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-27
+2026-01-15 03:03:16,029 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-16
+2026-01-15 03:03:16,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-28
+2026-01-15 03:03:16,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-29
+2026-01-15 03:03:16,360 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-17
+2026-01-15 03:03:16,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-30
+2026-01-15 03:03:16,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-31
+2026-01-15 03:03:16,693 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-18
+2026-01-15 03:03:16,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-32
+2026-01-15 03:03:17,027 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-19
+2026-01-15 03:03:17,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-33
+2026-01-15 03:03:17,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-34
+2026-01-15 03:03:17,359 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-20
+2026-01-15 03:03:17,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-35
+2026-01-15 03:03:17,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-36
+2026-01-15 03:03:17,693 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-21
+2026-01-15 03:03:17,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-37
+2026-01-15 03:03:18,026 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-22
+2026-01-15 03:03:18,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-38
+2026-01-15 03:03:18,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-39
+2026-01-15 03:03:18,360 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-23
+2026-01-15 03:03:18,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-40
+2026-01-15 03:03:18,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-41
+2026-01-15 03:03:18,692 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-24
+2026-01-15 03:03:18,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-42
+2026-01-15 03:03:19,025 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-25
+2026-01-15 03:03:19,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-43
+2026-01-15 03:03:19,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-44
+2026-01-15 03:03:19,358 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-26
+2026-01-15 03:03:19,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-45
+2026-01-15 03:03:19,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-46
+2026-01-15 03:03:19,690 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-27
+2026-01-15 03:03:19,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-47
+2026-01-15 03:03:20,024 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-28
+2026-01-15 03:03:20,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-48
+2026-01-15 03:03:20,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-49
+2026-01-15 03:03:20,358 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-29
+2026-01-15 03:03:20,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-50
+2026-01-15 03:03:20,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-51
+2026-01-15 03:03:20,691 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-30
+2026-01-15 03:03:20,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-52
+2026-01-15 03:03:21,023 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-31
+2026-01-15 03:03:21,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-53
+2026-01-15 03:03:21,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-54
+2026-01-15 03:03:21,356 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-32
+2026-01-15 03:03:21,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-55
+2026-01-15 03:03:21,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-56
+2026-01-15 03:03:21,689 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-33
+2026-01-15 03:03:21,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-57
+2026-01-15 03:03:22,022 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-34
+2026-01-15 03:03:22,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-58
+2026-01-15 03:03:22,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-59
+2026-01-15 03:03:22,354 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-35
+2026-01-15 03:03:22,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-60
+2026-01-15 03:03:22,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-61
+2026-01-15 03:03:22,689 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-36
+2026-01-15 03:03:22,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-62
+2026-01-15 03:03:23,020 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-37
+2026-01-15 03:03:23,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-63
+2026-01-15 03:03:23,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-64
+2026-01-15 03:03:23,365 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-38
+2026-01-15 03:03:23,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-65
+2026-01-15 03:03:23,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-66
+2026-01-15 03:03:23,697 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-39
+2026-01-15 03:03:23,836 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-67
+2026-01-15 03:03:24,024 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-40
+2026-01-15 03:03:24,039 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-68
+2026-01-15 03:03:24,241 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-69
+2026-01-15 03:03:24,352 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-41
+2026-01-15 03:03:24,446 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-70
+2026-01-15 03:03:24,636 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-71
+2026-01-15 03:03:24,700 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-42
+2026-01-15 03:03:24,843 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-72
+2026-01-15 03:03:25,028 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-43
+2026-01-15 03:03:25,044 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-73
+2026-01-15 03:03:25,236 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-74
+2026-01-15 03:03:25,361 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-44
+2026-01-15 03:03:25,440 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-75
+2026-01-15 03:03:25,644 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-76
+2026-01-15 03:03:25,692 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-45
+2026-01-15 03:03:25,849 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-77
+2026-01-15 03:03:26,023 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-46
+2026-01-15 03:03:26,039 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-78
+2026-01-15 03:03:26,244 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-79
+2026-01-15 03:03:26,354 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-47
+2026-01-15 03:03:26,448 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-80
+2026-01-15 03:03:26,638 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-81
+2026-01-15 03:03:26,686 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-48
+2026-01-15 03:03:26,843 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-82
+2026-01-15 03:03:27,031 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-49
+2026-01-15 03:03:27,047 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-83
+2026-01-15 03:03:27,236 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-84
+2026-01-15 03:03:27,363 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-50
+2026-01-15 03:03:27,442 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-85
+2026-01-15 03:03:27,645 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-86
+2026-01-15 03:03:27,692 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-51
+2026-01-15 03:03:27,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-87
+2026-01-15 03:03:28,026 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-52
+2026-01-15 03:03:28,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-88
+2026-01-15 03:03:28,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-89
+2026-01-15 03:03:28,349 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-53
+2026-01-15 03:03:28,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-90
+2026-01-15 03:03:28,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-91
+2026-01-15 03:03:28,681 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-54
+2026-01-15 03:03:28,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-92
+2026-01-15 03:03:29,015 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-55
+2026-01-15 03:03:29,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-93
+2026-01-15 03:03:29,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-94
+2026-01-15 03:03:29,348 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-56
+2026-01-15 03:03:29,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-95
+2026-01-15 03:03:29,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-96
+2026-01-15 03:03:29,680 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-57
+2026-01-15 03:03:29,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-97
+2026-01-15 03:03:30,014 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-58
+2026-01-15 03:03:30,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-98
+2026-01-15 03:03:30,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-99
+2026-01-15 03:03:30,348 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-59
+2026-01-15 03:03:30,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-100
+2026-01-15 03:03:30,680 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-60
+2026-01-15 03:03:30,788 INFO o.a.j.r.Summariser: summary +     45 in 00:00:20 =    2.2/s Avg:  7935 Min:  4359 Max: 14944 Err:     0 (0.00%) Active: 160 Started: 160 Finished: 0
+2026-01-15 03:03:31,013 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-61
+2026-01-15 03:03:31,355 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-62
+2026-01-15 03:03:31,687 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-63
+2026-01-15 03:03:32,017 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-64
+2026-01-15 03:03:32,360 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-65
+2026-01-15 03:03:32,691 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-66
+2026-01-15 03:03:33,024 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-67
+2026-01-15 03:03:33,357 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-68
+2026-01-15 03:03:33,686 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-69
+2026-01-15 03:03:34,018 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-70
+2026-01-15 03:03:34,349 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-71
+2026-01-15 03:03:34,681 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-72
+2026-01-15 03:03:35,010 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-73
+2026-01-15 03:03:35,356 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-74
+2026-01-15 03:03:35,688 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-75
+2026-01-15 03:03:36,021 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-76
+2026-01-15 03:03:36,354 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-77
+2026-01-15 03:03:36,687 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-78
+2026-01-15 03:03:37,016 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-79
+2026-01-15 03:03:37,349 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-80
+2026-01-15 03:03:37,679 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-81
+2026-01-15 03:03:38,011 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-82
+2026-01-15 03:03:38,345 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-83
+2026-01-15 03:03:38,678 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-84
+2026-01-15 03:03:39,012 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-85
+2026-01-15 03:03:39,342 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-86
+2026-01-15 03:03:39,672 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-87
+2026-01-15 03:03:40,004 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-88
+2026-01-15 03:03:40,336 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-89
+2026-01-15 03:03:40,684 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-90
+2026-01-15 03:03:41,013 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-91
+2026-01-15 03:03:41,343 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-92
+2026-01-15 03:03:41,678 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-93
+2026-01-15 03:03:42,006 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-94
+2026-01-15 03:03:42,338 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-95
+2026-01-15 03:03:42,671 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-96
+2026-01-15 03:03:43,004 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-97
+2026-01-15 03:03:43,334 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-98
+2026-01-15 03:03:43,668 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-99
+2026-01-15 03:03:44,014 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-100
+2026-01-15 03:03:44,333 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-101
+2026-01-15 03:03:44,676 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-102
+2026-01-15 03:03:44,998 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-103
+2026-01-15 03:03:45,333 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-104
+2026-01-15 03:03:45,665 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-105
+2026-01-15 03:03:45,998 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-106
+2026-01-15 03:03:46,332 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-107
+2026-01-15 03:03:46,664 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-108
+2026-01-15 03:03:46,998 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-109
+2026-01-15 03:03:47,331 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-110
+2026-01-15 03:03:47,663 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-111
+2026-01-15 03:03:47,995 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-112
+2026-01-15 03:03:48,330 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-113
+2026-01-15 03:03:48,662 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-114
+2026-01-15 03:03:48,995 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-115
+2026-01-15 03:03:49,328 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-116
+2026-01-15 03:03:49,661 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-117
+2026-01-15 03:03:49,994 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-118
+2026-01-15 03:03:50,328 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-119
+2026-01-15 03:03:50,661 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-120
+2026-01-15 03:03:50,993 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-121
+2026-01-15 03:03:51,326 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-122
+2026-01-15 03:03:51,659 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-123
+2026-01-15 03:03:51,992 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-124
+2026-01-15 03:03:52,325 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-125
+2026-01-15 03:03:52,660 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-126
+2026-01-15 03:03:52,992 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-127
+2026-01-15 03:03:53,324 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-128
+2026-01-15 03:03:53,657 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-129
+2026-01-15 03:03:53,992 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-130
+2026-01-15 03:03:54,322 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-131
+2026-01-15 03:03:54,657 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-132
+2026-01-15 03:03:54,990 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-133
+2026-01-15 03:03:55,321 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-134
+2026-01-15 03:03:55,654 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-135
+2026-01-15 03:03:55,988 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-136
+2026-01-15 03:03:56,322 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-137
+2026-01-15 03:03:56,654 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-138
+2026-01-15 03:03:56,988 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-139
+2026-01-15 03:03:57,336 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-140
+2026-01-15 03:03:57,653 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-141
+2026-01-15 03:03:57,988 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-142
+2026-01-15 03:03:58,319 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-143
+2026-01-15 03:03:58,652 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-144
+2026-01-15 03:03:58,996 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-145
+2026-01-15 03:03:59,318 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-146
+2026-01-15 03:03:59,652 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-147
+2026-01-15 03:03:59,985 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-148
+2026-01-15 03:04:00,319 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-149
+2026-01-15 03:04:00,540 INFO o.a.j.r.Summariser: summary +     36 in 00:00:30 =    1.2/s Avg: 26036 Min: 14482 Max: 40501 Err:     0 (0.00%) Active: 249 Started: 249 Finished: 0
+2026-01-15 03:04:00,557 INFO o.a.j.r.Summariser: summary =     81 in 00:00:50 =    1.6/s Avg: 15980 Min:  4359 Max: 40501 Err:     0 (0.00%)
+2026-01-15 03:04:00,653 INFO o.a.j.t.JMeterThread: Thread started: Thread Group 2-150
+2026-01-15 03:04:30,636 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-101
+2026-01-15 03:04:30,837 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-102
+2026-01-15 03:04:31,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-103
+2026-01-15 03:04:31,236 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-104
+2026-01-15 03:04:31,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-105
+2026-01-15 03:04:31,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-106
+2026-01-15 03:04:31,843 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-107
+2026-01-15 03:04:32,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-108
+2026-01-15 03:04:32,236 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-109
+2026-01-15 03:04:32,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-110
+2026-01-15 03:04:32,636 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-111
+2026-01-15 03:04:32,836 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-112
+2026-01-15 03:04:33,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-113
+2026-01-15 03:04:33,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-114
+2026-01-15 03:04:33,437 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-115
+2026-01-15 03:04:33,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-116
+2026-01-15 03:04:33,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-117
+2026-01-15 03:04:34,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-118
+2026-01-15 03:04:34,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-119
+2026-01-15 03:04:34,436 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-120
+2026-01-15 03:04:34,638 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-121
+2026-01-15 03:04:34,841 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-122
+2026-01-15 03:04:35,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-123
+2026-01-15 03:04:35,237 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-124
+2026-01-15 03:04:35,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-125
+2026-01-15 03:04:35,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-126
+2026-01-15 03:04:35,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-127
+2026-01-15 03:04:36,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-128
+2026-01-15 03:04:36,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-129
+2026-01-15 03:04:36,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-130
+2026-01-15 03:04:36,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-131
+2026-01-15 03:04:36,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-132
+2026-01-15 03:04:37,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-133
+2026-01-15 03:04:37,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-134
+2026-01-15 03:04:37,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-135
+2026-01-15 03:04:37,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-136
+2026-01-15 03:04:37,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-137
+2026-01-15 03:04:38,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-138
+2026-01-15 03:04:38,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-139
+2026-01-15 03:04:38,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-140
+2026-01-15 03:04:38,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-141
+2026-01-15 03:04:38,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-142
+2026-01-15 03:04:39,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-143
+2026-01-15 03:04:39,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-144
+2026-01-15 03:04:39,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-145
+2026-01-15 03:04:39,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-146
+2026-01-15 03:04:39,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-147
+2026-01-15 03:04:40,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-148
+2026-01-15 03:04:40,237 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-149
+2026-01-15 03:04:40,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-150
+2026-01-15 03:04:40,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-151
+2026-01-15 03:04:40,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-152
+2026-01-15 03:04:41,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-153
+2026-01-15 03:04:41,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-154
+2026-01-15 03:04:41,436 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-155
+2026-01-15 03:04:41,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-156
+2026-01-15 03:04:41,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-157
+2026-01-15 03:04:42,037 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-158
+2026-01-15 03:04:42,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-159
+2026-01-15 03:04:42,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-160
+2026-01-15 03:04:42,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-161
+2026-01-15 03:04:42,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-162
+2026-01-15 03:04:43,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-163
+2026-01-15 03:04:43,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-164
+2026-01-15 03:04:43,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-165
+2026-01-15 03:04:43,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-166
+2026-01-15 03:04:43,836 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-167
+2026-01-15 03:04:44,036 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-168
+2026-01-15 03:04:44,242 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-169
+2026-01-15 03:04:44,446 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-170
+2026-01-15 03:04:44,637 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-171
+2026-01-15 03:04:44,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-172
+2026-01-15 03:04:45,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-173
+2026-01-15 03:04:45,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-174
+2026-01-15 03:04:45,442 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-175
+2026-01-15 03:04:45,636 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-176
+2026-01-15 03:04:45,848 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-177
+2026-01-15 03:04:46,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-178
+2026-01-15 03:04:46,250 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-179
+2026-01-15 03:04:46,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-180
+2026-01-15 03:04:46,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-181
+2026-01-15 03:04:46,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-182
+2026-01-15 03:04:47,036 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-183
+2026-01-15 03:04:47,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-184
+2026-01-15 03:04:47,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-185
+2026-01-15 03:04:47,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-186
+2026-01-15 03:04:47,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-187
+2026-01-15 03:04:48,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-188
+2026-01-15 03:04:48,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-189
+2026-01-15 03:04:48,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-190
+2026-01-15 03:04:48,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-191
+2026-01-15 03:04:48,837 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-192
+2026-01-15 03:04:49,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-193
+2026-01-15 03:04:49,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-194
+2026-01-15 03:04:49,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-195
+2026-01-15 03:04:49,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-196
+2026-01-15 03:04:49,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-197
+2026-01-15 03:04:50,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-198
+2026-01-15 03:04:50,236 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-199
+2026-01-15 03:04:50,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-200
+2026-01-15 03:05:01,221 INFO o.a.j.r.Summariser: summary +     41 in 00:01:01 =    0.7/s Avg: 83397 Min: 40756 Max: 97785 Err:    26 (63.41%) Active: 350 Started: 350 Finished: 0
+2026-01-15 03:05:01,222 INFO o.a.j.r.Summariser: summary =    122 in 00:01:51 =    1.1/s Avg: 38636 Min:  4359 Max: 97785 Err:    26 (21.31%)
+2026-01-15 03:05:30,036 INFO o.a.j.r.Summariser: summary +     55 in 00:00:29 =    1.9/s Avg: 104641 Min: 95515 Max: 120313 Err:     0 (0.00%) Active: 350 Started: 350 Finished: 0
+2026-01-15 03:05:30,039 INFO o.a.j.r.Summariser: summary =    177 in 00:02:19 =    1.3/s Avg: 59146 Min:  4359 Max: 120313 Err:    26 (14.69%)
+2026-01-15 03:05:50,636 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-201
+2026-01-15 03:05:50,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-202
+2026-01-15 03:05:51,036 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-203
+2026-01-15 03:05:51,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-204
+2026-01-15 03:05:51,436 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-205
+2026-01-15 03:05:51,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-206
+2026-01-15 03:05:51,836 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-207
+2026-01-15 03:05:52,036 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-208
+2026-01-15 03:05:52,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-209
+2026-01-15 03:05:52,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-210
+2026-01-15 03:05:52,637 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-211
+2026-01-15 03:05:52,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-212
+2026-01-15 03:05:53,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-213
+2026-01-15 03:05:53,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-214
+2026-01-15 03:05:53,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-215
+2026-01-15 03:05:53,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-216
+2026-01-15 03:05:53,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-217
+2026-01-15 03:05:54,050 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-218
+2026-01-15 03:05:54,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-219
+2026-01-15 03:05:54,436 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-220
+2026-01-15 03:05:54,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-221
+2026-01-15 03:05:54,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-222
+2026-01-15 03:05:55,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-223
+2026-01-15 03:05:55,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-224
+2026-01-15 03:05:55,436 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-225
+2026-01-15 03:05:55,636 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-226
+2026-01-15 03:05:55,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-227
+2026-01-15 03:05:56,036 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-228
+2026-01-15 03:05:56,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-229
+2026-01-15 03:05:56,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-230
+2026-01-15 03:05:56,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-231
+2026-01-15 03:05:56,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-232
+2026-01-15 03:05:57,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-233
+2026-01-15 03:05:57,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-234
+2026-01-15 03:05:57,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-235
+2026-01-15 03:05:57,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-236
+2026-01-15 03:05:57,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-237
+2026-01-15 03:05:58,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-238
+2026-01-15 03:05:58,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-239
+2026-01-15 03:05:58,436 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-240
+2026-01-15 03:05:58,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-241
+2026-01-15 03:05:58,836 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-242
+2026-01-15 03:05:59,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-243
+2026-01-15 03:05:59,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-244
+2026-01-15 03:05:59,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-245
+2026-01-15 03:05:59,637 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-246
+2026-01-15 03:05:59,836 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-247
+2026-01-15 03:06:00,037 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-248
+2026-01-15 03:06:00,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-249
+2026-01-15 03:06:00,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-250
+2026-01-15 03:06:00,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-251
+2026-01-15 03:06:00,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-252
+2026-01-15 03:06:01,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-253
+2026-01-15 03:06:01,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-254
+2026-01-15 03:06:01,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-255
+2026-01-15 03:06:01,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-256
+2026-01-15 03:06:01,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-257
+2026-01-15 03:06:02,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-258
+2026-01-15 03:06:02,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-259
+2026-01-15 03:06:02,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-260
+2026-01-15 03:06:02,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-261
+2026-01-15 03:06:02,839 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-262
+2026-01-15 03:06:03,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-263
+2026-01-15 03:06:03,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-264
+2026-01-15 03:06:03,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-265
+2026-01-15 03:06:03,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-266
+2026-01-15 03:06:03,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-267
+2026-01-15 03:06:04,036 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-268
+2026-01-15 03:06:04,236 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-269
+2026-01-15 03:06:04,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-270
+2026-01-15 03:06:04,636 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-271
+2026-01-15 03:06:04,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-272
+2026-01-15 03:06:05,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-273
+2026-01-15 03:06:05,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-274
+2026-01-15 03:06:05,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-275
+2026-01-15 03:06:05,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-276
+2026-01-15 03:06:05,842 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-277
+2026-01-15 03:06:06,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-278
+2026-01-15 03:06:06,245 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-279
+2026-01-15 03:06:06,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-280
+2026-01-15 03:06:06,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-281
+2026-01-15 03:06:06,841 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-282
+2026-01-15 03:06:07,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-283
+2026-01-15 03:06:07,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-284
+2026-01-15 03:06:07,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-285
+2026-01-15 03:06:07,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-286
+2026-01-15 03:06:07,836 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-287
+2026-01-15 03:06:08,036 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-288
+2026-01-15 03:06:08,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-289
+2026-01-15 03:06:08,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-290
+2026-01-15 03:06:08,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-291
+2026-01-15 03:06:08,850 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-292
+2026-01-15 03:06:09,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-293
+2026-01-15 03:06:09,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-294
+2026-01-15 03:06:09,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-295
+2026-01-15 03:06:09,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-296
+2026-01-15 03:06:09,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-297
+2026-01-15 03:06:10,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-298
+2026-01-15 03:06:10,237 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-299
+2026-01-15 03:06:10,439 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-300
+2026-01-15 03:06:32,889 INFO o.a.j.r.Summariser: summary +     77 in 00:01:03 =    1.2/s Avg: 154181 Min: 115685 Max: 190450 Err:    23 (29.87%) Active: 450 Started: 450 Finished: 0
+2026-01-15 03:06:32,892 INFO o.a.j.r.Summariser: summary =    254 in 00:03:22 =    1.3/s Avg: 87956 Min:  4359 Max: 190450 Err:    49 (19.29%)
+2026-01-15 03:07:10,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-301
+2026-01-15 03:07:10,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-302
+2026-01-15 03:07:11,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-303
+2026-01-15 03:07:11,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-304
+2026-01-15 03:07:11,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-305
+2026-01-15 03:07:11,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-306
+2026-01-15 03:07:11,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-307
+2026-01-15 03:07:12,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-308
+2026-01-15 03:07:12,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-309
+2026-01-15 03:07:12,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-310
+2026-01-15 03:07:12,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-311
+2026-01-15 03:07:12,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-312
+2026-01-15 03:07:13,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-313
+2026-01-15 03:07:13,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-314
+2026-01-15 03:07:13,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-315
+2026-01-15 03:07:13,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-316
+2026-01-15 03:07:13,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-317
+2026-01-15 03:07:14,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-318
+2026-01-15 03:07:14,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-319
+2026-01-15 03:07:14,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-320
+2026-01-15 03:07:14,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-321
+2026-01-15 03:07:14,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-322
+2026-01-15 03:07:15,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-323
+2026-01-15 03:07:15,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-324
+2026-01-15 03:07:15,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-325
+2026-01-15 03:07:15,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-326
+2026-01-15 03:07:15,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-327
+2026-01-15 03:07:16,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-328
+2026-01-15 03:07:16,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-329
+2026-01-15 03:07:16,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-330
+2026-01-15 03:07:16,638 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-331
+2026-01-15 03:07:16,838 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-332
+2026-01-15 03:07:17,040 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-333
+2026-01-15 03:07:17,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-334
+2026-01-15 03:07:17,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-335
+2026-01-15 03:07:17,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-336
+2026-01-15 03:07:17,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-337
+2026-01-15 03:07:18,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-338
+2026-01-15 03:07:18,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-339
+2026-01-15 03:07:18,437 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-340
+2026-01-15 03:07:18,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-341
+2026-01-15 03:07:18,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-342
+2026-01-15 03:07:19,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-343
+2026-01-15 03:07:19,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-344
+2026-01-15 03:07:19,436 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-345
+2026-01-15 03:07:19,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-346
+2026-01-15 03:07:19,847 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-347
+2026-01-15 03:07:20,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-348
+2026-01-15 03:07:20,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-349
+2026-01-15 03:07:20,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-350
+2026-01-15 03:07:20,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-351
+2026-01-15 03:07:20,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-352
+2026-01-15 03:07:21,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-353
+2026-01-15 03:07:21,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-354
+2026-01-15 03:07:21,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-355
+2026-01-15 03:07:21,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-356
+2026-01-15 03:07:21,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-357
+2026-01-15 03:07:22,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-358
+2026-01-15 03:07:22,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-359
+2026-01-15 03:07:22,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-360
+2026-01-15 03:07:22,634 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-361
+2026-01-15 03:07:22,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-362
+2026-01-15 03:07:23,036 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-363
+2026-01-15 03:07:23,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-364
+2026-01-15 03:07:23,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-365
+2026-01-15 03:07:23,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-366
+2026-01-15 03:07:23,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-367
+2026-01-15 03:07:24,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-368
+2026-01-15 03:07:24,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-369
+2026-01-15 03:07:24,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-370
+2026-01-15 03:07:24,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-371
+2026-01-15 03:07:24,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-372
+2026-01-15 03:07:25,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-373
+2026-01-15 03:07:25,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-374
+2026-01-15 03:07:25,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-375
+2026-01-15 03:07:25,636 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-376
+2026-01-15 03:07:25,834 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-377
+2026-01-15 03:07:26,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-378
+2026-01-15 03:07:26,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-379
+2026-01-15 03:07:26,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-380
+2026-01-15 03:07:26,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-381
+2026-01-15 03:07:26,836 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-382
+2026-01-15 03:07:27,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-383
+2026-01-15 03:07:27,235 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-384
+2026-01-15 03:07:27,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-385
+2026-01-15 03:07:27,635 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-386
+2026-01-15 03:07:27,836 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-387
+2026-01-15 03:07:28,035 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-388
+2026-01-15 03:07:28,234 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-389
+2026-01-15 03:07:28,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-390
+2026-01-15 03:07:28,637 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-391
+2026-01-15 03:07:28,835 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-392
+2026-01-15 03:07:29,034 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-393
+2026-01-15 03:07:29,236 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-394
+2026-01-15 03:07:29,434 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-395
+2026-01-15 03:07:29,643 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-396
+2026-01-15 03:07:29,849 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-397
+2026-01-15 03:07:30,039 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-398
+2026-01-15 03:07:30,245 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-399
+2026-01-15 03:07:30,435 INFO o.a.j.t.JMeterThread: Thread started: Incremental User Thread  1-400
+2026-01-15 03:07:35,093 INFO o.a.j.r.Summariser: summary +     68 in 00:01:02 =    1.1/s Avg: 185876 Min: 159790 Max: 235249 Err:     4 (5.88%) Active: 550 Started: 550 Finished: 0
+2026-01-15 03:07:35,100 INFO o.a.j.r.Summariser: summary =    322 in 00:04:24 =    1.2/s Avg: 108635 Min:  4359 Max: 235249 Err:    53 (16.46%)
+2026-01-15 03:08:00,649 INFO o.a.j.r.Summariser: summary +     35 in 00:00:26 =    1.4/s Avg: 204129 Min: 181858 Max: 228962 Err:    23 (65.71%) Active: 550 Started: 550 Finished: 0
+2026-01-15 03:08:00,650 INFO o.a.j.r.Summariser: summary =    357 in 00:04:50 =    1.2/s Avg: 117997 Min:  4359 Max: 235249 Err:    76 (21.29%)
+2026-01-15 03:08:21,816 INFO o.a.j.r.ResultCollector: Shutdown hook started
+2026-01-15 03:08:21,819 INFO o.a.j.r.ResultCollector: Shutdown hook ended
